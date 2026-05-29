@@ -147,3 +147,13 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* Mobile native-app feel */
+@media (max-width: 767px) {
+  html, body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button, a { -webkit-tap-highlight-color: transparent; }
+}
