@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { ChevronRight, FileText, Home, Plus, Trash2, Search } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ChevronRight, FileText, Home, Plus, Trash2, Search, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,14 +75,18 @@ export function ModuleView({ slug }: { slug: string }) {
 
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link to="/" className="hover:text-foreground inline-flex items-center gap-1">
-          <Home className="h-3.5 w-3.5" /> {t("Home", "الرئيسية")}
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-        <span className="text-foreground font-medium">{title}</span>
-      </nav>
+    <div className="space-y-4 lg:space-y-6">
+      {/* Mobile app header */}
+      <MobileBackHeader title={title} />
+
+      <div className="p-4 lg:p-6 pt-0 lg:pt-6 space-y-6">
+        <nav className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Link to="/" className="hover:text-foreground inline-flex items-center gap-1">
+            <Home className="h-3.5 w-3.5" /> {t("Home", "الرئيسية")}
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+          <span className="text-foreground font-medium">{title}</span>
+        </nav>
 
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
