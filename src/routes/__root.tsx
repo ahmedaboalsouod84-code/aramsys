@@ -95,20 +95,22 @@ function RootComponent() {
 function AuthedShell() {
   const { user } = useAuth();
   const router = useRouter();
+  const navigate = useNavigate();
   const path = router.state.location.pathname;
 
+  useEffect(() => {
+    if (!user && path !== "/login") navigate({ to: "/login" });
+  }, [user, path, navigate]);
+
   if (!user) {
-    if (path !== "/login") {
-      // Render the Outlet so the /login route can mount; redirect others.
-      if (typeof window !== "undefined") window.location.replace("/login");
-      return null;
-    }
     return (
       <div className="min-h-screen w-full bg-background text-foreground">
         <Outlet />
       </div>
     );
   }
+
+
 
   return (
     <SidebarProvider>
