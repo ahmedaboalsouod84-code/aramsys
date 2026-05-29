@@ -47,6 +47,7 @@ function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }
 
 export function ModuleView({ slug }: { slug: string }) {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
   const m = findModule(slug);
 
   if (!m) {
@@ -60,9 +61,18 @@ export function ModuleView({ slug }: { slug: string }) {
     );
   }
 
+  if (role && !canAccessModule(role, slug)) {
+    return <AccessDenied titleEn={m.en} titleAr={m.ar} />;
+  }
+
+  const visibleItems = role
+    ? m.items.filter((it) => allowedSubs(role, slug, m.items.map((x) => x.slug)).includes(it.slug))
+    : m.items;
+
   const title = lang === "ar" ? m.ar : m.en;
   const desc = lang === "ar" ? m.desc_ar : m.desc_en;
   const Icon = m.icon;
+
 
   return (
     <div className="p-4 md:p-6 space-y-6">
