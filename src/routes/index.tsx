@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MODULES } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { canAccessModule } from "@/lib/permissions";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
