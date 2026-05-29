@@ -25,6 +25,22 @@ function LoginPage() {
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const [err, setErr] = useState("");
 
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const r = login(username, password);
+    if (!r.ok) {
+      setErr(t("Invalid username or password", "اسم المستخدم أو كلمة المرور غير صحيحة"));
+      return;
+    }
+    navigate({ to: "/" });
+  };
+
+  const quickPick = (u: string) => {
+    setUsername(u);
+    setPassword(DEMO_PASSWORD);
+    setErr("");
+  };
+
   if (user) return <Navigate to="/" />;
 
   if (isMobile) {
@@ -89,22 +105,6 @@ function LoginPage() {
       </div>
     );
   }
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const r = login(username, password);
-    if (!r.ok) {
-      setErr(t("Invalid username or password", "اسم المستخدم أو كلمة المرور غير صحيحة"));
-      return;
-    }
-    navigate({ to: "/" });
-  };
-
-  const quickPick = (u: string) => {
-    setUsername(u);
-    setPassword(DEMO_PASSWORD);
-    setErr("");
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/10 p-4">
