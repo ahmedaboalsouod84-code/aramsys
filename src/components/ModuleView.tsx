@@ -160,6 +160,7 @@ function useLocalRecords(storageKey: string) {
 
 export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSlug: string }) {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
   const m = findModule(moduleSlug);
   const sub = m?.items.find((i) => i.slug === subSlug);
 
@@ -182,6 +183,12 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
       </div>
     );
   }
+
+  if (role && !canAccessSub(role, moduleSlug, subSlug)) {
+    return <AccessDenied titleEn={sub.en} titleAr={sub.ar} />;
+  }
+
+
 
   const modTitle = lang === "ar" ? m.ar : m.en;
   const subTitle = lang === "ar" ? sub.ar : sub.en;
