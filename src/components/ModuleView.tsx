@@ -98,7 +98,7 @@ export function ModuleView({ slug }: { slug: string }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {m.items.map((it) => {
+        {visibleItems.map((it) => {
           const itTitle = lang === "ar" ? it.ar : it.en;
           return (
             <Link key={it.slug} to={`/m/${m.slug}/${it.slug}`}>
