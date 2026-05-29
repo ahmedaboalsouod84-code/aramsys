@@ -1,10 +1,22 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, FileText, Home } from "lucide-react";
+import { ChevronRight, FileText, Home, Plus, Trash2, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { findModule } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { getFormSchema, type Field } from "@/lib/formSchemas";
 
 export function ModuleView({ slug }: { slug: string }) {
   const { t, lang } = useI18n();
@@ -65,7 +77,7 @@ export function ModuleView({ slug }: { slug: string }) {
                 <CardContent>
                   <CardTitle className="text-sm">{itTitle}</CardTitle>
                   <CardDescription className="text-xs mt-1">
-                    {t("Open screen", "افتح الشاشة")}
+                    {t("Open form", "افتح النموذج")}
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -73,21 +85,58 @@ export function ModuleView({ slug }: { slug: string }) {
           );
         })}
       </div>
-
-      <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-        {t(
-          "This is a UI shell. Screens are placeholders ready to be wired to your backend.",
-          "هذه واجهة عرض فقط. الشاشات تجريبية جاهزة للربط مع الخادم لاحقًا."
-        )}
-      </div>
     </div>
   );
+}
+
+type Record = Record_;
+type Record_ = { _id: string; _createdAt: string } & { [k: string]: string };
+
+function emptyValues(fields: Field[]): { [k: string]: string } {
+  const v: { [k: string]: string } = {};
+  for (const f of fields) v[f.key] = "";
+  return v;
+}
+
+function useLocalRecords(storageKey: string) {
+  const [records, setRecords] = useState<Record[]>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      setRecords(raw ? JSON.parse(raw) : []);
+    } catch {
+      setRecords([]);
+    }
+  }, [storageKey]);
+
+  const persist = (next: Record[]) => {
+    setRecords(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(storageKey, JSON.stringify(next));
+    }
+  };
+
+  return { records, persist };
 }
 
 export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSlug: string }) {
   const { t, lang } = useI18n();
   const m = findModule(moduleSlug);
   const sub = m?.items.find((i) => i.slug === subSlug);
+
+  const fields = useMemo(() => getFormSchema(moduleSlug, subSlug), [moduleSlug, subSlug]);
+  const storageKey = `da:${moduleSlug}:${subSlug}`;
+  const { records, persist } = useLocalRecords(storageKey);
+
+  const [open, setOpen] = useState(false);
+  const [values, setValues] = useState<{ [k: string]: string }>(() => emptyValues(fields));
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    setValues(emptyValues(fields));
+  }, [fields]);
 
   if (!m || !sub) {
     return (
@@ -99,6 +148,41 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
 
   const modTitle = lang === "ar" ? m.ar : m.en;
   const subTitle = lang === "ar" ? sub.ar : sub.en;
+
+  const fLabel = (f: Field) => (lang === "ar" ? f.ar : f.en);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    for (const f of fields) {
+      if (f.required && !values[f.key]?.trim()) return;
+    }
+    const rec: Record = {
+      _id: crypto.randomUUID(),
+      _createdAt: new Date().toISOString(),
+      ...values,
+    };
+    persist([rec, ...records]);
+    setValues(emptyValues(fields));
+    setOpen(false);
+  };
+
+  const del = (id: string) => persist(records.filter((r) => r._id !== id));
+
+  const tableFields = fields.slice(0, 5);
+  const filtered = query
+    ? records.filter((r) =>
+        Object.values(r).some((v) => String(v).toLowerCase().includes(query.toLowerCase()))
+      )
+    : records;
+
+  const renderCell = (f: Field, v: string) => {
+    if (!v) return <span className="text-muted-foreground">—</span>;
+    if (f.type === "select" && f.options) {
+      const opt = f.options.find((o) => o.value === v);
+      if (opt) return <Badge variant="secondary">{lang === "ar" ? opt.ar : opt.en}</Badge>;
+    }
+    return v;
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -119,48 +203,141 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
             {t(`Part of ${modTitle}`, `ضمن ${modTitle}`)}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">{t("Export", "تصدير")}</Button>
-          <Button size="sm">{t("New record", "سجل جديد")}</Button>
-        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              {t("New record", "سجل جديد")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {t(`Add ${subTitle}`, `إضافة ${subTitle}`)}
+              </DialogTitle>
+              <DialogDescription>
+                {t("Fill the form below. Saved locally on this device.", "املأ النموذج. يُحفظ محليًا على هذا الجهاز.")}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+              {fields.map((f) => {
+                const isWide = f.type === "textarea";
+                return (
+                  <div key={f.key} className={`space-y-1.5 ${isWide ? "sm:col-span-2" : ""}`}>
+                    <Label htmlFor={f.key}>
+                      {fLabel(f)}
+                      {f.required && <span className="text-destructive ms-1">*</span>}
+                    </Label>
+                    {f.type === "textarea" ? (
+                      <Textarea
+                        id={f.key}
+                        value={values[f.key] || ""}
+                        onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                        rows={3}
+                      />
+                    ) : f.type === "select" ? (
+                      <Select
+                        value={values[f.key] || ""}
+                        onValueChange={(v) => setValues({ ...values, [f.key]: v })}
+                      >
+                        <SelectTrigger id={f.key}>
+                          <SelectValue placeholder={t("Select…", "اختر…")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {f.options!.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {lang === "ar" ? o.ar : o.en}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id={f.key}
+                        type={f.type}
+                        value={values[f.key] || ""}
+                        onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                        required={f.required}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+              <DialogFooter className="sm:col-span-2 gap-2">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  {t("Cancel", "إلغاء")}
+                </Button>
+                <Button type="submit">{t("Save", "حفظ")}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("Records", "السجلات")}</CardTitle>
-          <CardDescription>
-            {t("Demo table — connect a backend to load real data.", "جدول تجريبي — اربط الخادم لعرض البيانات الحقيقية.")}
-          </CardDescription>
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">{t("Records", "السجلات")}</CardTitle>
+              <CardDescription>
+                {records.length} {t("records saved locally", "سجل محفوظ محليًا")}
+              </CardDescription>
+            </div>
+            <div className="relative w-full max-w-xs">
+              <Search className="pointer-events-none absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t("Search…", "بحث…")}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="ps-9"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-hidden rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
-                <tr>
-                  <th className="text-start font-medium px-3 py-2">#</th>
-                  <th className="text-start font-medium px-3 py-2">{t("Reference", "المرجع")}</th>
-                  <th className="text-start font-medium px-3 py-2">{t("Name", "الاسم")}</th>
-                  <th className="text-start font-medium px-3 py-2">{t("Date", "التاريخ")}</th>
-                  <th className="text-start font-medium px-3 py-2">{t("Status", "الحالة")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{m.slug.toUpperCase()}-{1000 + i}</td>
-                    <td className="px-3 py-2">{subTitle} #{i + 1}</td>
-                    <td className="px-3 py-2 text-muted-foreground">2026-05-{(10 + i).toString().padStart(2, "0")}</td>
-                    <td className="px-3 py-2">
-                      <Badge variant={i % 3 === 0 ? "default" : i % 3 === 1 ? "secondary" : "outline"}>
-                        {i % 3 === 0 ? t("Active", "نشط") : i % 3 === 1 ? t("Pending", "قيد الانتظار") : t("Closed", "مغلق")}
-                      </Badge>
-                    </td>
+          {filtered.length === 0 ? (
+            <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
+              {t("No records yet. Click \"New record\" to add the first one.", "لا توجد سجلات بعد. اضغط \"سجل جديد\" لإضافة أول سجل.")}
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-md border">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-muted-foreground">
+                  <tr>
+                    <th className="text-start font-medium px-3 py-2 w-10">#</th>
+                    {tableFields.map((f) => (
+                      <th key={f.key} className="text-start font-medium px-3 py-2 whitespace-nowrap">
+                        {fLabel(f)}
+                      </th>
+                    ))}
+                    <th className="text-end font-medium px-3 py-2 w-12"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((r, i) => (
+                    <tr key={r._id} className="border-t hover:bg-muted/30">
+                      <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                      {tableFields.map((f) => (
+                        <td key={f.key} className="px-3 py-2 whitespace-nowrap">
+                          {renderCell(f, r[f.key])}
+                        </td>
+                      ))}
+                      <td className="px-3 py-2 text-end">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => del(r._id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
