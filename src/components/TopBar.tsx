@@ -15,8 +15,6 @@ export function TopBar() {
   const navigate = useNavigate();
   const [dark, setDark] = useState(false);
 
-  const { t, lang, setLang } = useI18n();
-  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
