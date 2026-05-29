@@ -20,9 +20,9 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { t, lang } = useI18n();
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const visibleModules = role ? MODULES.filter((m) => canAccessModule(role, m.slug)) : MODULES;
-
+  const canSeeDashboard = role === "admin" || role === "accountant";
 
   const stats = [
     { label: t("Today's Patients", "مرضى اليوم"), value: "128", delta: "+12%", icon: Users, tint: "bg-primary/15 text-primary" },
@@ -36,10 +36,17 @@ function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("Clinic Dashboard", "لوحة تحكم العيادة")}
+            {canSeeDashboard
+              ? t("Clinic Dashboard", "لوحة تحكم العيادة")
+              : t(
+                  `Welcome, ${user ? user.name_en : ""}`,
+                  `مرحبًا، ${user ? user.name_ar : ""}`,
+                )}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {t("Real-time overview across clinical and financial operations.", "نظرة لحظية على العمليات الإكلينيكية والمالية.")}
+            {canSeeDashboard
+              ? t("Real-time overview across clinical and financial operations.", "نظرة لحظية على العمليات الإكلينيكية والمالية.")
+              : t("Quick access to your authorized modules.", "وصول سريع إلى الوحدات المتاحة لك.")}
           </p>
         </div>
 
@@ -49,26 +56,29 @@ function Dashboard() {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="pt-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                  <div className="mt-2 text-2xl font-semibold">{s.value}</div>
-                  <div className="mt-1 text-xs text-success inline-flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" /> {s.delta}
+      {canSeeDashboard && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {stats.map((s) => (
+            <Card key={s.label}>
+              <CardContent className="pt-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                    <div className="mt-2 text-2xl font-semibold">{s.value}</div>
+                    <div className="mt-1 text-xs text-success inline-flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" /> {s.delta}
+                    </div>
+                  </div>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.tint}`}>
+                    <s.icon className="h-5 w-5" />
                   </div>
                 </div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.tint}`}>
-                  <s.icon className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
 
       <div>
         <div className="flex items-center justify-between mb-3">
