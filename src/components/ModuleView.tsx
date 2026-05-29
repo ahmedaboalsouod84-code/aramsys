@@ -91,7 +91,7 @@ export function ModuleView({ slug }: { slug: string }) {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-            <Badge variant="secondary">{m.items.length} {t("screens", "شاشة")}</Badge>
+            <Badge variant="secondary">{visibleItems.length} {t("screens", "شاشة")}</Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">{desc}</p>
         </div>
