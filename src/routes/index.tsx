@@ -37,7 +37,6 @@ function Dashboard() {
           </p>
         </div>
 
-        </div>
         <Badge variant="outline" className="gap-1.5">
           <Activity className="h-3 w-3 text-success" />
           {t("All systems operational", "جميع الأنظمة تعمل")}
