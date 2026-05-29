@@ -10,33 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MModuleRouteImport } from './routes/m.$module'
+import { Route as MModuleSubRouteImport } from './routes/m.$module.$sub'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MModuleRoute = MModuleRouteImport.update({
+  id: '/m/$module',
+  path: '/m/$module',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MModuleSubRoute = MModuleSubRouteImport.update({
+  id: '/$sub',
+  path: '/$sub',
+  getParentRoute: () => MModuleRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/m/$module': typeof MModuleRouteWithChildren
+  '/m/$module/$sub': typeof MModuleSubRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/m/$module': typeof MModuleRouteWithChildren
+  '/m/$module/$sub': typeof MModuleSubRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/m/$module': typeof MModuleRouteWithChildren
+  '/m/$module/$sub': typeof MModuleSubRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/m/$module' | '/m/$module/$sub'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/m/$module' | '/m/$module/$sub'
+  id: '__root__' | '/' | '/m/$module' | '/m/$module/$sub'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MModuleRoute: typeof MModuleRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +67,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/m/$module': {
+      id: '/m/$module'
+      path: '/m/$module'
+      fullPath: '/m/$module'
+      preLoaderRoute: typeof MModuleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m/$module/$sub': {
+      id: '/m/$module/$sub'
+      path: '/$sub'
+      fullPath: '/m/$module/$sub'
+      preLoaderRoute: typeof MModuleSubRouteImport
+      parentRoute: typeof MModuleRoute
+    }
   }
 }
 
+interface MModuleRouteChildren {
+  MModuleSubRoute: typeof MModuleSubRoute
+}
+
+const MModuleRouteChildren: MModuleRouteChildren = {
+  MModuleSubRoute: MModuleSubRoute,
+}
+
+const MModuleRouteWithChildren =
+  MModuleRoute._addFileChildren(MModuleRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MModuleRoute: MModuleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
