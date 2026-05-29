@@ -16,7 +16,34 @@ import {
 } from "@/components/ui/select";
 import { findModule } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { canAccessModule, canAccessSub, allowedSubs } from "@/lib/permissions";
 import { getFormSchema, type Field } from "@/lib/formSchemas";
+
+function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }) {
+  const { t } = useI18n();
+  return (
+    <div className="p-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>{t("Access denied", "غير مصرح بالوصول")}</CardTitle>
+          <CardDescription>
+            {t(
+              `You do not have permission to view "${titleEn}". Contact the system administrator.`,
+              `لا تملك صلاحية لعرض "${titleAr}". تواصل مع مدير النظام.`,
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/" className="text-sm text-primary underline">
+            {t("Back to dashboard", "العودة للوحة التحكم")}
+          </Link>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
 export function ModuleView({ slug }: { slug: string }) {
   const { t, lang } = useI18n();
