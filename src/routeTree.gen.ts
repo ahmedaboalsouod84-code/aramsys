@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MModuleRouteImport } from './routes/m.$module'
+import { Route as MModuleIndexRouteImport } from './routes/m.$module.index'
 import { Route as MModuleSubRouteImport } from './routes/m.$module.$sub'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const MModuleRoute = MModuleRouteImport.update({
   path: '/m/$module',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MModuleIndexRoute = MModuleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MModuleRoute,
+} as any)
 const MModuleSubRoute = MModuleSubRouteImport.update({
   id: '/$sub',
   path: '/$sub',
@@ -33,24 +39,26 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
+  '/m/$module/': typeof MModuleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
+  '/m/$module': typeof MModuleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
+  '/m/$module/': typeof MModuleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/m/$module' | '/m/$module/$sub'
+  fullPaths: '/' | '/m/$module' | '/m/$module/$sub' | '/m/$module/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/m/$module' | '/m/$module/$sub'
-  id: '__root__' | '/' | '/m/$module' | '/m/$module/$sub'
+  to: '/' | '/m/$module/$sub' | '/m/$module'
+  id: '__root__' | '/' | '/m/$module' | '/m/$module/$sub' | '/m/$module/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -74,6 +82,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MModuleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/m/$module/': {
+      id: '/m/$module/'
+      path: '/'
+      fullPath: '/m/$module/'
+      preLoaderRoute: typeof MModuleIndexRouteImport
+      parentRoute: typeof MModuleRoute
+    }
     '/m/$module/$sub': {
       id: '/m/$module/$sub'
       path: '/$sub'
@@ -86,10 +101,12 @@ declare module '@tanstack/react-router' {
 
 interface MModuleRouteChildren {
   MModuleSubRoute: typeof MModuleSubRoute
+  MModuleIndexRoute: typeof MModuleIndexRoute
 }
 
 const MModuleRouteChildren: MModuleRouteChildren = {
   MModuleSubRoute: MModuleSubRoute,
+  MModuleIndexRoute: MModuleIndexRoute,
 }
 
 const MModuleRouteWithChildren =
