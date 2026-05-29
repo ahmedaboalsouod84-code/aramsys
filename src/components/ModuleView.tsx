@@ -16,10 +16,38 @@ import {
 } from "@/components/ui/select";
 import { findModule } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { canAccessModule, canAccessSub, allowedSubs } from "@/lib/permissions";
 import { getFormSchema, type Field } from "@/lib/formSchemas";
+
+function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }) {
+  const { t } = useI18n();
+  return (
+    <div className="p-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>{t("Access denied", "غير مصرح بالوصول")}</CardTitle>
+          <CardDescription>
+            {t(
+              `You do not have permission to view "${titleEn}". Contact the system administrator.`,
+              `لا تملك صلاحية لعرض "${titleAr}". تواصل مع مدير النظام.`,
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/" className="text-sm text-primary underline">
+            {t("Back to dashboard", "العودة للوحة التحكم")}
+          </Link>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
 export function ModuleView({ slug }: { slug: string }) {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
   const m = findModule(slug);
 
   if (!m) {
@@ -33,9 +61,18 @@ export function ModuleView({ slug }: { slug: string }) {
     );
   }
 
+  if (role && !canAccessModule(role, slug)) {
+    return <AccessDenied titleEn={m.en} titleAr={m.ar} />;
+  }
+
+  const visibleItems = role
+    ? m.items.filter((it) => allowedSubs(role, slug, m.items.map((x) => x.slug)).includes(it.slug))
+    : m.items;
+
   const title = lang === "ar" ? m.ar : m.en;
   const desc = lang === "ar" ? m.desc_ar : m.desc_en;
   const Icon = m.icon;
+
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -54,14 +91,14 @@ export function ModuleView({ slug }: { slug: string }) {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-            <Badge variant="secondary">{m.items.length} {t("screens", "شاشة")}</Badge>
+            <Badge variant="secondary">{visibleItems.length} {t("screens", "شاشة")}</Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">{desc}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {m.items.map((it) => {
+        {visibleItems.map((it) => {
           const itTitle = lang === "ar" ? it.ar : it.en;
           return (
             <Link key={it.slug} to={`/m/${m.slug}/${it.slug}`}>
@@ -123,6 +160,7 @@ function useLocalRecords(storageKey: string) {
 
 export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSlug: string }) {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
   const m = findModule(moduleSlug);
   const sub = m?.items.find((i) => i.slug === subSlug);
 
@@ -145,6 +183,12 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
       </div>
     );
   }
+
+  if (role && !canAccessSub(role, moduleSlug, subSlug)) {
+    return <AccessDenied titleEn={sub.en} titleAr={sub.ar} />;
+  }
+
+
 
   const modTitle = lang === "ar" ? m.ar : m.en;
   const subTitle = lang === "ar" ? sub.ar : sub.en;

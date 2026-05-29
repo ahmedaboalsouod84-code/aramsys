@@ -7,15 +7,20 @@ import {
 } from "@/components/ui/sidebar";
 import { MODULES } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { canAccessModule } from "@/lib/permissions";
 import logoMark from "@/assets/logo-mark.png";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { t, lang } = useI18n();
+  const { role } = useAuth();
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (path: string) =>
     currentPath === path || currentPath.startsWith(path + "/");
+  const visibleModules = role ? MODULES.filter((m) => canAccessModule(role, m.slug)) : MODULES;
+
 
   return (
     <Sidebar collapsible="icon" side={lang === "ar" ? "right" : "left"}>
@@ -58,7 +63,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>{t("Modules", "الوحدات")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {MODULES.map((m) => {
+              {visibleModules.map((m) => {
                 const path = `/m/${m.slug}`;
                 const label = lang === "ar" ? m.ar : m.en;
                 return (

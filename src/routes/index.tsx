@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MODULES } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { canAccessModule } from "@/lib/permissions";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,6 +20,9 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
+  const visibleModules = role ? MODULES.filter((m) => canAccessModule(role, m.slug)) : MODULES;
+
 
   const stats = [
     { label: t("Today's Patients", "مرضى اليوم"), value: "128", delta: "+12%", icon: Users, tint: "bg-primary/15 text-primary" },
@@ -67,10 +73,10 @@ function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">{t("Modules", "الوحدات")}</h2>
-          <span className="text-xs text-muted-foreground">{MODULES.length} {t("modules", "وحدة")}</span>
+          <span className="text-xs text-muted-foreground">{visibleModules.length} {t("modules", "وحدة")}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {MODULES.map((m) => {
+          {visibleModules.map((m) => {
             const title = lang === "ar" ? m.ar : m.en;
             const desc = lang === "ar" ? m.desc_ar : m.desc_en;
             return (
