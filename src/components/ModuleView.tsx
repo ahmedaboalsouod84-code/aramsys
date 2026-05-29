@@ -89,17 +89,16 @@ export function ModuleView({ slug }: { slug: string }) {
   );
 }
 
-type Record = Record_;
-type Record_ = { _id: string; _createdAt: string } & { [k: string]: string };
 type RowRecord = { _id: string; _createdAt: string; [k: string]: string };
 
+function emptyValues(fields: Field[]): { [k: string]: string } {
   const v: { [k: string]: string } = {};
   for (const f of fields) v[f.key] = "";
   return v;
 }
 
 function useLocalRecords(storageKey: string) {
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<RowRecord[]>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -111,7 +110,7 @@ function useLocalRecords(storageKey: string) {
     }
   }, [storageKey]);
 
-  const persist = (next: Record[]) => {
+  const persist = (next: RowRecord[]) => {
     setRecords(next);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(storageKey, JSON.stringify(next));
@@ -120,6 +119,7 @@ function useLocalRecords(storageKey: string) {
 
   return { records, persist };
 }
+
 
 export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSlug: string }) {
   const { t, lang } = useI18n();
