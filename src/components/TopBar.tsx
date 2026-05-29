@@ -46,10 +46,36 @@ export function TopBar() {
           <Bell className="h-4 w-4" />
           <Badge className="absolute -top-0.5 -end-0.5 h-4 min-w-4 rounded-full px-1 text-[10px]">3</Badge>
         </Button>
-        <Avatar className="h-8 w-8 ms-1">
-          <AvatarFallback className="bg-primary text-primary-foreground text-xs">DR</AvatarFallback>
-        </Avatar>
+        {user && (
+          <div className="flex items-center gap-2 ms-1 ps-2 border-s">
+            <div className="hidden md:flex flex-col items-end leading-tight">
+              <span className="text-xs font-medium">
+                {lang === "ar" ? user.name_ar : user.name_en}
+              </span>
+              <Badge variant="secondary" className="text-[9px] uppercase h-4 px-1.5">
+                {user.role}
+              </Badge>
+            </div>
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs uppercase">
+                {user.username.slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              variant="ghost"
+              size="icon"
+              title={t("Sign out", "تسجيل خروج")}
+              onClick={() => { logout(); navigate({ to: "/login" }); }}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
+    </header>
+  );
+}
+
     </header>
   );
 }
