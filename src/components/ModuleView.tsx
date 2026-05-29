@@ -125,7 +125,27 @@ export function ModuleView({ slug }: { slug: string }) {
             </Link>
           );
         })}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function MobileBackHeader({ title }: { title: string }) {
+  const navigate = useNavigate();
+  return (
+    <div
+      className="lg:hidden sticky top-0 z-30 bg-card border-b border-border flex items-center gap-2 px-2 h-14"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <button
+        type="button"
+        onClick={() => navigate({ to: "/" })}
+        className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition"
+      >
+        <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
+      </button>
+      <h1 className="text-base font-semibold truncate flex-1">{title}</h1>
     </div>
   );
 }
