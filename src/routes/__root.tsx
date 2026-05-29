@@ -120,7 +120,7 @@ function AuthedShell() {
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar />
           <main
-            className="flex-1 min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0"
+            className="flex-1 min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
           >
             <Outlet />
           </main>
