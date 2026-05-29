@@ -2,60 +2,55 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Home, LayoutGrid, Search, Bell, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useSidebar } from "@/components/ui/sidebar";
 
 export function MobileBottomNav() {
   const { t } = useI18n();
   const { user } = useAuth();
-  const { setOpenMobile } = useSidebar();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   if (!user) return null;
 
-  const isActive = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
-
   const items = [
-    { key: "home", to: "/", icon: Home, label: t("Home", "الرئيسية"), onClick: () => navigate({ to: "/" }) },
-    { key: "modules", icon: LayoutGrid, label: t("Modules", "الوحدات"), onClick: () => setOpenMobile(true), active: false },
-    { key: "search", icon: Search, label: t("Search", "بحث"), onClick: () => {} },
-    { key: "alerts", icon: Bell, label: t("Alerts", "التنبيهات"), onClick: () => {}, badge: 3 },
-    { key: "me", to: "/login", icon: User, label: t("Me", "حسابي") },
+    { key: "home", icon: Home, label: t("Home", "الرئيسية"), to: "/" },
+    { key: "modules", icon: LayoutGrid, label: t("Apps", "التطبيقات"), to: "/" },
+    { key: "search", icon: Search, label: t("Search", "بحث"), to: "/" },
+    { key: "alerts", icon: Bell, label: t("Alerts", "تنبيهات"), to: "/", badge: 3 },
+    { key: "me", icon: User, label: t("Me", "حسابي"), to: "/" },
   ];
+
+  const isActive = (key: string) => key === "home" && path === "/";
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t border-border bg-card shadow-[0_-2px_12px_rgba(0,0,0,0.06)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="grid grid-cols-5">
         {items.map((it) => {
-          const ActiveCls = (it.to && isActive(it.to)) || it.active
-            ? "text-primary"
-            : "text-muted-foreground";
-          const Inner = (
-            <div className={`flex flex-col items-center justify-center gap-0.5 py-2 ${ActiveCls}`}>
-              <div className="relative">
-                <it.icon className="h-5 w-5" />
-                {it.badge ? (
-                  <span className="absolute -top-1.5 -end-2 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] leading-4 text-center">
-                    {it.badge}
-                  </span>
-                ) : null}
-              </div>
-              <span className="text-[10px] font-medium">{it.label}</span>
-            </div>
-          );
+          const active = isActive(it.key);
           return (
             <li key={it.key}>
-              {it.to ? (
-                <Link to={it.to} className="block active:scale-95 transition-transform">
-                  {Inner}
-                </Link>
-              ) : (
-                <button type="button" onClick={it.onClick} className="w-full active:scale-95 transition-transform">
-                  {Inner}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate({ to: it.to })}
+                className="w-full flex flex-col items-center justify-center gap-1 py-2.5 active:scale-95 transition-transform"
+              >
+                <div
+                  className={`relative flex items-center justify-center h-9 w-9 rounded-2xl transition-colors ${
+                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  <it.icon className="h-5 w-5" strokeWidth={2.2} />
+                  {it.badge ? (
+                    <span className="absolute -top-0.5 -end-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] leading-4 text-center font-bold ring-2 ring-card">
+                      {it.badge}
+                    </span>
+                  ) : null}
+                </div>
+                <span className={`text-[10px] font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>
+                  {it.label}
+                </span>
+              </button>
             </li>
           );
         })}

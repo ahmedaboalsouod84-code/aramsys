@@ -6,6 +6,8 @@ import { MODULES } from "@/lib/modules";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHome } from "@/components/MobileHome";
 
 
 export const Route = createFileRoute("/")({
@@ -19,6 +21,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileHome />;
+
   const { t, lang } = useI18n();
   const { role, user } = useAuth();
   const visibleModules = role ? MODULES.filter((m) => canAccessModule(role, m.slug)) : MODULES;
