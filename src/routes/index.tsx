@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — MedaCare HMS" },
+      { title: "Dashboard — Durrat Aram Dental Clinics" },
       { name: "description", content: "Hospital & ERP operations dashboard." },
     ],
   }),
@@ -19,10 +19,10 @@ function Dashboard() {
   const { t, lang } = useI18n();
 
   const stats = [
-    { label: t("Today's Patients", "مرضى اليوم"), value: "342", delta: "+12%", icon: Users, tint: "bg-primary/10 text-primary" },
-    { label: t("Inpatient Beds", "أسرّة التنويم"), value: "186 / 240", delta: "78%", icon: BedDouble, tint: "bg-accent/15 text-accent" },
-    { label: t("Today's Revenue", "إيرادات اليوم"), value: "$48,250", delta: "+8.4%", icon: DollarSign, tint: "bg-success/15 text-success" },
-    { label: t("Active Doctors", "الأطباء النشطون"), value: "27", delta: "+2", icon: Stethoscope, tint: "bg-warning/20 text-warning-foreground" },
+    { label: t("Today's Patients", "مرضى اليوم"), value: "128", delta: "+12%", icon: Users, tint: "bg-primary/15 text-primary" },
+    { label: t("Dental Chairs", "كراسي الأسنان"), value: "14 / 18", delta: "78%", icon: BedDouble, tint: "bg-accent/30 text-accent-foreground" },
+    { label: t("Today's Revenue", "إيرادات اليوم"), value: "SAR 42,180", delta: "+8.4%", icon: DollarSign, tint: "bg-success/15 text-success" },
+    { label: t("Active Dentists", "الأطباء النشطون"), value: "9", delta: "+1", icon: Stethoscope, tint: "bg-warning/25 text-warning-foreground" },
   ];
 
   return (
@@ -30,12 +30,13 @@ function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("Hospital Dashboard", "لوحة تحكم المستشفى")}
+            {t("Clinic Dashboard", "لوحة تحكم العيادة")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t("Real-time overview across clinical and financial operations.", "نظرة لحظية على العمليات الإكلينيكية والمالية.")}
           </p>
         </div>
+
         <Badge variant="outline" className="gap-1.5">
           <Activity className="h-3 w-3 text-success" />
           {t("All systems operational", "جميع الأنظمة تعمل")}

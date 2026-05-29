@@ -40,17 +40,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MedaCare HMS — Hospital & ERP" },
-      { name: "description", content: "Bilingual hospital management & ERP platform with 17 modules." },
-      { property: "og:title", content: "MedaCare HMS — Hospital & ERP" },
-      { name: "twitter:title", content: "MedaCare HMS — Hospital & ERP" },
-      { property: "og:description", content: "Bilingual hospital management & ERP platform with 17 modules." },
-      { name: "twitter:description", content: "Bilingual hospital management & ERP platform with 17 modules." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/76b9310f-be00-4ebf-9300-75814420a004/id-preview-7a1f4672--77ef716c-6aa9-469c-9170-38f769e2ea3a.lovable.app-1780024621698.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/76b9310f-be00-4ebf-9300-75814420a004/id-preview-7a1f4672--77ef716c-6aa9-469c-9170-38f769e2ea3a.lovable.app-1780024621698.png" },
+      { title: "Durrat Aram Dental Clinics" },
+      { name: "description", content: "Bilingual practice management system for Durrat Aram Dental Clinics." },
+      { property: "og:title", content: "Durrat Aram Dental Clinics" },
+      { name: "twitter:title", content: "Durrat Aram Dental Clinics" },
+      { property: "og:description", content: "Bilingual practice management system for Durrat Aram Dental Clinics." },
+      { name: "twitter:description", content: "Bilingual practice management system for Durrat Aram Dental Clinics." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+
     ],
     links: [
       { rel: "stylesheet", href: appCss },
