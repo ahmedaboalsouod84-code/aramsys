@@ -63,7 +63,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>{t("Modules", "الوحدات")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {MODULES.map((m) => {
+              {visibleModules.map((m) => {
                 const path = `/m/${m.slug}`;
                 const label = lang === "ar" ? m.ar : m.en;
                 return (
