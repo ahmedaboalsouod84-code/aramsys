@@ -48,10 +48,10 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={currentPath === "/"} tooltip={t("Dashboard", "لوحة التحكم")}>
+                <SidebarMenuButton asChild isActive={currentPath === "/"} tooltip={role === "admin" || role === "accountant" ? t("Dashboard", "لوحة التحكم") : t("Home", "الرئيسية")}>
                   <Link to="/">
                     <LayoutDashboard className="h-4 w-4" />
-                    <span>{t("Dashboard", "لوحة التحكم")}</span>
+                    <span>{role === "admin" || role === "accountant" ? t("Dashboard", "لوحة التحكم") : t("Home", "الرئيسية")}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
