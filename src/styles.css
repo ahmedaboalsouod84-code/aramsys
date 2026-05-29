@@ -46,12 +46,6 @@
 
 :root {
   --radius: 0.5rem;
-  /* Medical professional palette: clinical white, deep teal/blue */
-  --background: oklch(0.99 0.005 220);
-  --foreground: oklch(0.22 0.04 230);
-  --card: oklch(1 0 0);
-:root {
-  --radius: 0.5rem;
   /* Durrat Aram Dental: warm ivory bg, gold primary, deep black sidebar */
   --background: oklch(0.99 0.005 85);
   --foreground: oklch(0.18 0.01 60);
@@ -91,13 +85,6 @@
   --sidebar-ring: oklch(0.82 0.13 85);
 }
 
-}
-
-.dark {
-  --background: oklch(0.16 0.03 230);
-  --foreground: oklch(0.95 0.005 220);
-  --card: oklch(0.20 0.035 230);
-  --card-foreground: oklch(0.95 0.005 220);
 .dark {
   --background: oklch(0.14 0.005 60);
   --foreground: oklch(0.95 0.01 85);
@@ -132,7 +119,7 @@
   --sidebar-ring: oklch(0.82 0.13 85);
 }
 
-
+@layer base {
   html {
     font-family: var(--font-sans);
   }
@@ -149,7 +136,7 @@
 }
 
 /* Mobile native-app feel */
-@media (max-width: 767px) {
+@media (max-width: 1179px) {
   html, body {
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
