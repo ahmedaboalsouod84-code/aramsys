@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { DEMO_USERS, DEMO_PASSWORD } from "@/lib/permissions";
 import logoMark from "@/assets/logo-mark.png";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -19,11 +20,10 @@ function LoginPage() {
   const { user, login } = useAuth();
   const { t, lang, setLang } = useI18n();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const [err, setErr] = useState("");
-
-  if (user) return <Navigate to="/" />;
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +40,71 @@ function LoginPage() {
     setPassword(DEMO_PASSWORD);
     setErr("");
   };
+
+  if (user) return <Navigate to="/" />;
+
+  if (isMobile) {
+    return (
+      <div className="min-h-[100dvh] bg-sidebar text-sidebar-foreground">
+        <div className="px-5 pb-7" style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sidebar-foreground/10 p-2">
+                <img src={logoMark} alt="Durrat Aram" className="h-full w-full object-contain" />
+              </div>
+              <div>
+                <div className="text-lg font-bold">{t("Durrat Aram", "درة أرام")}</div>
+                <div className="text-xs text-sidebar-foreground/65">{t("Dental Clinics", "عيادات الأسنان")}</div>
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground">
+              <Languages className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="mt-10">
+            <h1 className="text-3xl font-bold tracking-tight">{t("Sign in", "تسجيل الدخول")}</h1>
+            <p className="mt-2 text-sm text-sidebar-foreground/70">{t("Choose your account and continue.", "اختر الحساب ثم ادخل للنظام.")}</p>
+          </div>
+        </div>
+
+        <div className="min-h-[68dvh] rounded-t-[2rem] bg-background px-5 pb-8 pt-6 text-foreground shadow-[0_-18px_40px_rgba(0,0,0,0.22)]">
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="mobile-username">{t("Username", "اسم المستخدم")}</Label>
+              <Input id="mobile-username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin" className="h-12 rounded-2xl text-base" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mobile-password">{t("Password", "كلمة المرور")}</Label>
+              <Input id="mobile-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 rounded-2xl text-base" />
+            </div>
+            {err && <p className="text-sm text-destructive">{err}</p>}
+            <Button type="submit" className="h-12 w-full rounded-2xl gap-2 text-base font-bold">
+              <LogIn className="h-5 w-5" />
+              {t("Sign in", "دخول")}
+            </Button>
+          </form>
+
+          <div className="mt-7">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-bold">{t("Users", "المستخدمين")}</h2>
+              <Badge variant="secondary" className="rounded-full">{DEMO_PASSWORD}</Badge>
+            </div>
+            <div className="grid gap-2.5">
+              {DEMO_USERS.map((u) => (
+                <button key={u.username} onClick={() => quickPick(u.username)} className="flex min-h-14 items-center justify-between rounded-2xl border border-border bg-card px-3.5 py-2.5 text-start shadow-sm active:scale-[0.98] transition-transform">
+                  <div>
+                    <div className="text-sm font-semibold">{lang === "ar" ? u.name_ar : u.name_en}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{u.username}</div>
+                  </div>
+                  <Badge variant="outline" className="rounded-full uppercase text-[10px]">{u.role}</Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/10 p-4">

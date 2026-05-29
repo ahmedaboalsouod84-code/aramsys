@@ -75,12 +75,12 @@ export function ModuleView({ slug }: { slug: string }) {
 
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="space-y-4 xl:space-y-6">
       {/* Mobile app header */}
       <MobileBackHeader title={title} />
 
-      <div className="p-4 lg:p-6 pt-0 lg:pt-6 space-y-6">
-        <nav className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground">
+      <div className="p-4 xl:p-6 pt-0 xl:pt-6 space-y-6">
+        <nav className="hidden xl:flex items-center gap-1.5 text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground inline-flex items-center gap-1">
             <Home className="h-3.5 w-3.5" /> {t("Home", "الرئيسية")}
           </Link>
@@ -101,7 +101,7 @@ export function ModuleView({ slug }: { slug: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
         {visibleItems.map((it) => {
           const itTitle = lang === "ar" ? it.ar : it.en;
           return (
@@ -135,7 +135,7 @@ function MobileBackHeader({ title }: { title: string }) {
   const navigate = useNavigate();
   return (
     <div
-      className="lg:hidden sticky top-0 z-30 bg-card border-b border-border flex items-center gap-2 px-2 h-14"
+      className="xl:hidden sticky top-0 z-30 bg-card border-b border-border flex items-center gap-2 px-2 h-14"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <button

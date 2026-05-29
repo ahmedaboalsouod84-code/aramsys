@@ -22,7 +22,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t border-border bg-card shadow-[0_-2px_12px_rgba(0,0,0,0.06)]"
+      className="xl:hidden fixed bottom-0 inset-x-0 z-50 border-t border-border bg-card shadow-[0_-2px_12px_rgba(0,0,0,0.06)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="grid grid-cols-5">
