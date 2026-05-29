@@ -1,13 +1,20 @@
-import { Bell, Search, Languages, Plus, Moon, Sun } from "lucide-react";
+import { Bell, Search, Languages, Plus, Moon, Sun, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 
 export function TopBar() {
+  const { t, lang, setLang } = useI18n();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [dark, setDark] = useState(false);
+
   const { t, lang, setLang } = useI18n();
   const [dark, setDark] = useState(false);
 
