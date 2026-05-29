@@ -156,7 +156,7 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
     for (const f of fields) {
       if (f.required && !values[f.key]?.trim()) return;
     }
-    const rec: Record = {
+    const rec: RowRecord = {
       _id: crypto.randomUUID(),
       _createdAt: new Date().toISOString(),
       ...values,
