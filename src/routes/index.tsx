@@ -20,6 +20,9 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { t, lang } = useI18n();
+  const { role } = useAuth();
+  const visibleModules = role ? MODULES.filter((m) => canAccessModule(role, m.slug)) : MODULES;
+
 
   const stats = [
     { label: t("Today's Patients", "مرضى اليوم"), value: "128", delta: "+12%", icon: Users, tint: "bg-primary/15 text-primary" },
