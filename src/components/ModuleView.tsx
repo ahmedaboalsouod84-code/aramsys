@@ -91,8 +91,8 @@ export function ModuleView({ slug }: { slug: string }) {
 
 type Record = Record_;
 type Record_ = { _id: string; _createdAt: string } & { [k: string]: string };
+type RowRecord = { _id: string; _createdAt: string; [k: string]: string };
 
-function emptyValues(fields: Field[]): { [k: string]: string } {
   const v: { [k: string]: string } = {};
   for (const f of fields) v[f.key] = "";
   return v;
