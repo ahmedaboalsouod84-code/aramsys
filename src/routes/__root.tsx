@@ -82,18 +82,44 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-background text-foreground">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <TopBar />
-              <main className="flex-1 min-w-0">
-                <Outlet />
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
+        <AuthProvider>
+          <AuthedShell />
+        </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
   );
 }
+
+function AuthedShell() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const path = router.state.location.pathname;
+
+  if (!user) {
+    if (path !== "/login") {
+      // Render the Outlet so the /login route can mount; redirect others.
+      if (typeof window !== "undefined") window.location.replace("/login");
+      return null;
+    }
+    return (
+      <div className="min-h-screen w-full bg-background text-foreground">
+        <Outlet />
+      </div>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background text-foreground">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar />
+          <main className="flex-1 min-w-0">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
