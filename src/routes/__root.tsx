@@ -5,12 +5,12 @@ import {
 
 import appCss from "../styles.css?url";
 import { I18nProvider } from "@/lib/i18n";
-import appCss from "../styles.css?url";
-import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBar } from "@/components/TopBar";
+
+function NotFoundComponent() {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">
