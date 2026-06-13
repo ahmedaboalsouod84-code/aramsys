@@ -289,8 +289,11 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+    <div className="space-y-4">
+      <MobileBackHeader title={subTitle} to={`/m/${m.slug}`} />
+      <div className="p-4 md:p-6 pt-0 md:pt-6 space-y-6">
+      <nav className="hidden xl:flex items-center gap-1.5 text-sm text-muted-foreground">
+
         <Link to="/" className="hover:text-foreground inline-flex items-center gap-1">
           <Home className="h-3.5 w-3.5" /> {t("Home", "الرئيسية")}
         </Link>
