@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MModuleRouteImport } from './routes/m.$module'
 import { Route as MModuleIndexRouteImport } from './routes/m.$module.index'
@@ -18,6 +19,11 @@ import { Route as MModuleSubRouteImport } from './routes/m.$module.$sub'
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsRoute = AppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,6 +49,7 @@ const MModuleSubRoute = MModuleSubRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module/$sub': typeof MModuleSubRoute
   '/m/$module': typeof MModuleIndexRoute
@@ -57,6 +65,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
@@ -64,12 +73,19 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/m/$module' | '/m/$module/$sub' | '/m/$module/'
+  fullPaths:
+    | '/'
+    | '/apps'
+    | '/login'
+    | '/m/$module'
+    | '/m/$module/$sub'
+    | '/m/$module/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/m/$module/$sub' | '/m/$module'
+  to: '/' | '/apps' | '/login' | '/m/$module/$sub' | '/m/$module'
   id:
     | '__root__'
     | '/'
+    | '/apps'
     | '/login'
     | '/m/$module'
     | '/m/$module/$sub'
@@ -78,6 +94,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppsRoute: typeof AppsRoute
   LoginRoute: typeof LoginRoute
   MModuleRoute: typeof MModuleRouteWithChildren
 }
@@ -89,6 +106,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps': {
+      id: '/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof AppsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -137,9 +161,20 @@ const MModuleRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppsRoute: AppsRoute,
   LoginRoute: LoginRoute,
   MModuleRoute: MModuleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
