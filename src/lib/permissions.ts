@@ -32,7 +32,7 @@ export const ROLE_PERMS: Record<Role, RolePerms> = {
   },
   pharmacy: {
     inventory: [
-      "items", "barcode", "stock-in", "stock-out", "returns",
+      "medicine-dispensing", "items", "barcode", "stock-in", "stock-out", "returns",
       "receiving", "warehouse-monitor", "warehouses", "pharmacy", "reports",
     ],
     sales: ["pharmacy-pos", "returns", "invoices"],
