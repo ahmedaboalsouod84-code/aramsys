@@ -103,7 +103,7 @@ export function ModuleView({ slug }: { slug: string }) {
   return (
     <div className="space-y-4 xl:space-y-6">
       {/* Mobile app header */}
-      <MobileBackHeader title={title} />
+      <MobileBackHeader title={title} to="/" />
 
       <div className="p-4 xl:p-6 pt-0 xl:pt-6 space-y-6">
         <nav className="hidden xl:flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -157,7 +157,7 @@ export function ModuleView({ slug }: { slug: string }) {
   );
 }
 
-function MobileBackHeader({ title }: { title: string }) {
+function MobileBackHeader({ title, to }: { title: string; to: string }) {
   const navigate = useNavigate();
   return (
     <div
@@ -166,7 +166,13 @@ function MobileBackHeader({ title }: { title: string }) {
     >
       <button
         type="button"
-        onClick={() => navigate({ to: "/" })}
+        onClick={() => {
+          if (typeof window !== "undefined" && window.history.length > 1) {
+            window.history.back();
+          } else {
+            navigate({ to });
+          }
+        }}
         className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition"
       >
         <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
@@ -175,6 +181,7 @@ function MobileBackHeader({ title }: { title: string }) {
     </div>
   );
 }
+
 
 type RowRecord = { _id: string; _createdAt: string; [k: string]: string };
 
@@ -282,8 +289,11 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+    <div className="space-y-4">
+      <MobileBackHeader title={subTitle} to={`/m/${m.slug}`} />
+      <div className="p-4 md:p-6 pt-0 md:pt-6 space-y-6">
+      <nav className="hidden xl:flex items-center gap-1.5 text-sm text-muted-foreground">
+
         <Link to="/" className="hover:text-foreground inline-flex items-center gap-1">
           <Home className="h-3.5 w-3.5" /> {t("Home", "الرئيسية")}
         </Link>
@@ -437,6 +447,8 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
+
 }
