@@ -157,7 +157,7 @@ export function ModuleView({ slug }: { slug: string }) {
   );
 }
 
-function MobileBackHeader({ title }: { title: string }) {
+function MobileBackHeader({ title, to }: { title: string; to: string }) {
   const navigate = useNavigate();
   return (
     <div
@@ -166,7 +166,13 @@ function MobileBackHeader({ title }: { title: string }) {
     >
       <button
         type="button"
-        onClick={() => navigate({ to: "/" })}
+        onClick={() => {
+          if (typeof window !== "undefined" && window.history.length > 1) {
+            window.history.back();
+          } else {
+            navigate({ to });
+          }
+        }}
         className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted active:scale-90 transition"
       >
         <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
@@ -175,6 +181,7 @@ function MobileBackHeader({ title }: { title: string }) {
     </div>
   );
 }
+
 
 type RowRecord = { _id: string; _createdAt: string; [k: string]: string };
 
