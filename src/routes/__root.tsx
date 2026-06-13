@@ -89,6 +89,7 @@ function RootComponent() {
       <I18nProvider>
         <AuthProvider>
           <AuthedShell />
+          <Toaster />
         </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
