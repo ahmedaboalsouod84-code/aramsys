@@ -8,7 +8,7 @@ import {
   useInvoices, usePayments, useRadiology, usePackets, useMatRequests,
   useBatches, useActivity, useCases, useDoctors, useServices, usePatients,
   fmtSAR, statusColor, STATUS_LABEL_AR,
-  type AccountingBatch, type BatchType, type BatchLine,
+  type AccountingBatch, type BatchLine,
 } from "@/lib/journey-store";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
