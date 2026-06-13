@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { Home, LayoutGrid, Search, Bell, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -12,13 +12,15 @@ export function MobileBottomNav() {
 
   const items = [
     { key: "home", icon: Home, label: t("Home", "الرئيسية"), to: "/" },
-    { key: "modules", icon: LayoutGrid, label: t("Apps", "التطبيقات"), to: "/" },
-    { key: "search", icon: Search, label: t("Search", "بحث"), to: "/" },
-    { key: "alerts", icon: Bell, label: t("Alerts", "تنبيهات"), to: "/", badge: 3 },
-    { key: "me", icon: User, label: t("Me", "حسابي"), to: "/" },
+    { key: "modules", icon: LayoutGrid, label: t("Apps", "التطبيقات"), to: "/apps" },
+    { key: "search", icon: Search, label: t("Search", "بحث"), to: "/apps" },
+    { key: "alerts", icon: Bell, label: t("Alerts", "تنبيهات"), to: "/alerts", badge: 3 },
+    { key: "me", icon: User, label: t("Me", "حسابي"), to: "/me" },
   ];
 
-  const isActive = (key: string) => key === "home" && path === "/";
+  const isActive = (to: string) =>
+    to === "/" ? path === "/" : path.startsWith(to);
+
 
   return (
     <nav
