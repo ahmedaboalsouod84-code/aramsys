@@ -29,6 +29,14 @@ import { CostDistributionPage } from "@/components/erp/CostDistributionPage";
 import { ClinicProfitabilityPage } from "@/components/erp/ClinicProfitabilityPage";
 import { FinancialStatementsPage } from "@/components/erp/FinancialStatementsPage";
 import { ErpDashboardPage } from "@/components/erp/ErpDashboardPage";
+import {
+  ServicesPage, ReceptionDashboard, DoctorDashboard, PatientsPage,
+} from "@/components/journey/pages-core";
+import { CasesPage } from "@/components/journey/pages-cases";
+import {
+  InvoicesPage, PaymentsPage, RadiologyDashboard, PacketsPage,
+  MaterialRequestsPage, AccountingBatchesPage, DoctorProfitabilityPage, ActivityLogPage,
+} from "@/components/journey/pages-ops";
 
 const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
@@ -44,6 +52,20 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "accounting:financial-statements": FinancialStatementsPage,
   "accounting:income-statement": FinancialStatementsPage,
   "accounting:balance-sheet": FinancialStatementsPage,
+  // Patient Journey
+  "journey:reception-dash": ReceptionDashboard,
+  "journey:doctor-dash": DoctorDashboard,
+  "journey:patients": PatientsPage,
+  "journey:cases": CasesPage,
+  "journey:services": ServicesPage,
+  "journey:invoices": InvoicesPage,
+  "journey:payments": PaymentsPage,
+  "journey:radiology": RadiologyDashboard,
+  "journey:packets": PacketsPage,
+  "journey:materials": MaterialRequestsPage,
+  "journey:batches": AccountingBatchesPage,
+  "journey:profitability": DoctorProfitabilityPage,
+  "journey:activity": ActivityLogPage,
 };
 
 function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }) {
