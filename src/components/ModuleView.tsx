@@ -30,7 +30,7 @@ import { ClinicProfitabilityPage } from "@/components/erp/ClinicProfitabilityPag
 import { FinancialStatementsPage } from "@/components/erp/FinancialStatementsPage";
 import { ErpDashboardPage } from "@/components/erp/ErpDashboardPage";
 
-const ERP_PAGES: Record<string, () => JSX.Element> = {
+const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
   "inventory:pharmacy": MedicineDispensingPage,
   "accounting:erp-dashboard": ErpDashboardPage,
