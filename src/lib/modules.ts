@@ -18,6 +18,26 @@ export type ModuleDef = {
 
 export const MODULES: ModuleDef[] = [
   {
+    slug: "journey", en: "Patient Journey", ar: "رحلة المريض", icon: Activity,
+    desc_en: "Patient Cases, services, invoices, payments, radiology, inventory, batches",
+    desc_ar: "حالات المرضى والخدمات والفواتير والمدفوعات والأشعة والمواد والدفعات المحاسبية",
+    items: [
+      { slug: "reception-dash", en: "Reception Dashboard", ar: "لوحة الاستقبال" },
+      { slug: "doctor-dash", en: "Doctor Dashboard", ar: "لوحة الطبيب" },
+      { slug: "patients", en: "Patients", ar: "المرضى" },
+      { slug: "cases", en: "Patient Cases", ar: "حالات المرضى" },
+      { slug: "services", en: "Services & Price List", ar: "الخدمات والأسعار" },
+      { slug: "invoices", en: "Invoices", ar: "الفواتير" },
+      { slug: "payments", en: "Payments", ar: "المدفوعات" },
+      { slug: "radiology", en: "Radiology Center", ar: "قسم الأشعة" },
+      { slug: "packets", en: "Tools & Packets", ar: "الأطقم والأدوات" },
+      { slug: "materials", en: "Material Requests", ar: "طلبات المواد" },
+      { slug: "batches", en: "Accounting Batches", ar: "الدفعات المحاسبية" },
+      { slug: "profitability", en: "Doctor Profitability", ar: "ربحية الأطباء" },
+      { slug: "activity", en: "Activity Log", ar: "سجل النشاط" },
+    ],
+  },
+  {
     slug: "medical", en: "Medical Systems", ar: "الأنظمة الطبية", icon: Stethoscope,
     desc_en: "Patients, clinics, inpatient, labs, radiology, surgery, billing",
     desc_ar: "المرضى والعيادات والتنويم والمختبرات والأشعة والعمليات والفواتير",
