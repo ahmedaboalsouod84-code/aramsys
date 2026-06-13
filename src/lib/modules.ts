@@ -1,7 +1,7 @@
 import {
   Stethoscope, Users, Package, ShoppingCart, Receipt, Headset,
   Building2, Wrench, Car, Wallet, Landmark, BookOpen, FolderKanban,
-  ShieldCheck, MessageSquare, Archive, Settings,
+  ShieldCheck, MessageSquare, Archive, Settings, Activity,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
