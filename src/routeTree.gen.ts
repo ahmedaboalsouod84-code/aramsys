@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppsRouteImport } from './routes/apps'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MModuleRouteImport } from './routes/m.$module'
 import { Route as MModuleIndexRouteImport } from './routes/m.$module.index'
@@ -24,6 +25,11 @@ const LoginRoute = LoginRouteImport.update({
 const AppsRoute = AppsRouteImport.update({
   id: '/apps',
   path: '/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,6 +55,7 @@ const MModuleSubRoute = MModuleSubRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module': typeof MModuleRouteWithChildren
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module/$sub': typeof MModuleSubRoute
@@ -65,6 +73,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
   '/m/$module': typeof MModuleRouteWithChildren
@@ -75,16 +84,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts'
     | '/apps'
     | '/login'
     | '/m/$module'
     | '/m/$module/$sub'
     | '/m/$module/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/apps' | '/login' | '/m/$module/$sub' | '/m/$module'
+  to: '/' | '/alerts' | '/apps' | '/login' | '/m/$module/$sub' | '/m/$module'
   id:
     | '__root__'
     | '/'
+    | '/alerts'
     | '/apps'
     | '/login'
     | '/m/$module'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
   AppsRoute: typeof AppsRoute
   LoginRoute: typeof LoginRoute
   MModuleRoute: typeof MModuleRouteWithChildren
@@ -113,6 +125,13 @@ declare module '@tanstack/react-router' {
       path: '/apps'
       fullPath: '/apps'
       preLoaderRoute: typeof AppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -161,6 +180,7 @@ const MModuleRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
   AppsRoute: AppsRoute,
   LoginRoute: LoginRoute,
   MModuleRoute: MModuleRouteWithChildren,
