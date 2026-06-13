@@ -341,6 +341,10 @@ export function PatientsPage() {
     if (!form.name_ar.trim()) return toast.error("الاسم مطلوب");
     if (!form.phone.trim()) return toast.error("رقم التواصل مطلوب");
     if (!form.nationality) return toast.error("الجنسية مطلوبة");
+    if (idNumber.startsWith("1") && form.nationality !== "SA")
+      return toast.error("رقم يبدأ بـ 1 مسموح فقط للجنسية السعودية");
+    if (form.nationality === "SA" && !idNumber.startsWith("1"))
+      return toast.error("رقم الهوية السعودية يجب أن يبدأ بـ 1");
     if (patients.some(p => p.idNumber === idNumber)) return toast.error("رقم الهوية مسجل مسبقاً");
 
     setPatients(prev => [...prev, {
