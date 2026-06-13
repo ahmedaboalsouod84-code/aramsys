@@ -447,6 +447,8 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
+
 }
