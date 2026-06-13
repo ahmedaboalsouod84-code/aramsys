@@ -337,7 +337,7 @@ export function PatientsPage() {
   const submit = () => {
     const idNumber = form.idNumber.trim();
     if (!idNumber) return toast.error("رقم الهوية/الإقامة مطلوب");
-    if (!/^[0-9]{6,15}$/.test(idNumber)) return toast.error("رقم الهوية يجب أن يكون أرقاماً (6-15 خانة)");
+    if (!/^[0-9]{10}$/.test(idNumber)) return toast.error("رقم الهوية/الإقامة يجب أن يتكون من 10 أرقام بالضبط");
     if (!form.name_ar.trim()) return toast.error("الاسم مطلوب");
     if (!form.phone.trim()) return toast.error("رقم التواصل مطلوب");
     if (!form.nationality) return toast.error("الجنسية مطلوبة");
@@ -415,9 +415,9 @@ export function PatientsPage() {
           <div className="grid grid-cols-2 gap-3 py-2">
             <div className="col-span-2">
               <Label>رقم الهوية / الإقامة <span className="text-destructive">*</span></Label>
-              <Input value={form.idNumber} inputMode="numeric"
-                onChange={e => setForm({ ...form, idNumber: e.target.value.replace(/\D/g, "") })}
-                placeholder="سيكون رقم الملف داخل النظام" />
+              <Input value={form.idNumber} inputMode="numeric" maxLength={10}
+                onChange={e => setForm({ ...form, idNumber: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+                placeholder="10 أرقام بالضبط — سيكون رقم الملف داخل النظام" />
             </div>
             <div className="col-span-2"><Label>الاسم الكامل <span className="text-destructive">*</span></Label>
               <Input value={form.name_ar} onChange={e => setForm({ ...form, name_ar: e.target.value })} /></div>
