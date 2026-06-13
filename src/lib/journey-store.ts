@@ -36,15 +36,32 @@ export type Doctor = {
   commissionPct?: number;
 };
 
+export type PatientAttachment = {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
+  uploadedAt: string;
+};
+
 export type Patient = {
   id: string;
-  fileNo: string;
+  fileNo: string;        // == idNumber
+  idNumber: string;      // رقم الهوية / الإقامة
+  nationality: string;   // "SA" = سعودي (بدون ضريبة قيمة مضافة)
   name_ar: string;
   name_en?: string;
   phone: string;
   gender?: "M" | "F";
   dob?: string;
+  employer?: string;
+  attachments?: PatientAttachment[];
 };
+
+export function isVatExempt(p?: Patient | null): boolean {
+  return !!p && p.nationality === "SA";
+}
 
 export type CaseStatus = "active" | "pending_payment" | "medically_completed" | "closed" | "cancelled";
 export type PayStatus = "unpaid" | "partial" | "paid" | "refunded";
@@ -257,10 +274,10 @@ const SEED_DOCTORS: Doctor[] = [
 ];
 
 const SEED_PATIENTS: Patient[] = [
-  { id: "p1", fileNo: "F-0001", name_ar: "محمد عبدالله", phone: "0501234567", gender: "M", dob: "1985-03-12" },
-  { id: "p2", fileNo: "F-0002", name_ar: "فاطمة الحربي", phone: "0507654321", gender: "F", dob: "1992-08-04" },
-  { id: "p3", fileNo: "F-0003", name_ar: "خالد الدوسري", phone: "0551112233", gender: "M", dob: "1978-11-20" },
-  { id: "p4", fileNo: "F-0004", name_ar: "نورة القحطاني", phone: "0533445566", gender: "F", dob: "2001-01-15" },
+  { id: "1078451236", fileNo: "1078451236", idNumber: "1078451236", nationality: "SA", name_ar: "محمد عبدالله", phone: "0501234567", gender: "M", dob: "1985-03-12", employer: "وزارة الصحة" },
+  { id: "2345678901", fileNo: "2345678901", idNumber: "2345678901", nationality: "SA", name_ar: "فاطمة الحربي", phone: "0507654321", gender: "F", dob: "1992-08-04" },
+  { id: "2456789012", fileNo: "2456789012", idNumber: "2456789012", nationality: "EG", name_ar: "خالد الدوسري", phone: "0551112233", gender: "M", dob: "1978-11-20", employer: "شركة خاصة" },
+  { id: "2567890123", fileNo: "2567890123", idNumber: "2567890123", nationality: "SA", name_ar: "نورة القحطاني", phone: "0533445566", gender: "F", dob: "2001-01-15" },
 ];
 
 const SEED_PACKETS: ToolPacket[] = [
@@ -348,20 +365,20 @@ export function fmtSAR(n: number) {
 }
 export const VAT = VAT_RATE;
 
-export function caseTotals(c: PatientCase, invoices: Invoice[], payments: Payment[]) {
-  // service totals from case services
+export function caseTotals(c: PatientCase, invoices: Invoice[], payments: Payment[], patient?: Patient | null) {
+  const vatExempt = isVatExempt(patient);
   let subtotal = 0, vat = 0;
   for (const s of c.services) {
     if (s.free) continue;
     const line = s.qty * s.unitPrice;
     subtotal += line;
-    if (s.taxable) vat += line * (s.vat / 100);
+    if (s.taxable && !vatExempt) vat += line * (s.vat / 100);
   }
   const total = subtotal + vat;
   const paid = payments.filter(p => p.caseId === c.id).reduce((a, p) => a + p.amount, 0);
   const invoiced = invoices.filter(i => i.caseId === c.id && i.status !== "cancelled")
     .reduce((a, i) => a + i.total, 0);
-  return { subtotal, vat, total, paid, remaining: total - paid, invoiced };
+  return { subtotal, vat, total, paid, remaining: total - paid, invoiced, vatExempt };
 }
 
 export function logActivity(setActivity: (u: (p: ActivityEntry[]) => ActivityEntry[]) => void,

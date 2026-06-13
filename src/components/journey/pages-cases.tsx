@@ -219,7 +219,7 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
   if (!c) return <div className="p-6">الحالة غير موجودة <Button onClick={onBack}>رجوع</Button></div>;
   const patient = patients.find(p => p.id === c.patientId);
   const doctor = doctors.find(d => d.id === c.doctorId);
-  const t = caseTotals(c, invoices, payments);
+  const t = caseTotals(c, invoices, payments, patient);
   const caseInvoices = invoices.filter(i => i.caseId === c.id);
   const casePayments = payments.filter(p => p.caseId === c.id);
   const caseRad = radiology.filter(r => r.caseId === c.id);
@@ -321,12 +321,13 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
             <Button onClick={() => {
               const pending = c.services.filter(s => !s.invoiced && !s.free);
               if (pending.length === 0) return toast.error("لا توجد خدمات بانتظار الفوترة");
+              const vatExempt = patient?.nationality === "SA";
               let subtotal = 0, vat = 0;
               const lines = pending.map(s => {
                 const line = s.qty * s.unitPrice;
                 subtotal += line;
-                if (s.taxable) vat += line * (s.vat / 100);
-                return { serviceId: s.serviceId, code: s.code, name_ar: s.name_ar, qty: s.qty, unitPrice: s.unitPrice, taxable: s.taxable, vat: s.vat };
+                if (s.taxable && !vatExempt) vat += line * (s.vat / 100);
+                return { serviceId: s.serviceId, code: s.code, name_ar: s.name_ar, qty: s.qty, unitPrice: s.unitPrice, taxable: s.taxable && !vatExempt, vat: vatExempt ? 0 : s.vat };
               });
               const inv: Invoice = {
                 id: crypto.randomUUID(),
@@ -342,7 +343,7 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
                 services: x.services.map(s => pending.find(p => p.id === s.id) ? { ...s, invoiced: true, invoiceId: inv.id } : s),
               }));
               log("إنشاء فاتورة", inv.invoiceNo);
-              toast.success(`تم إنشاء ${inv.invoiceNo}`);
+              toast.success(`تم إنشاء ${inv.invoiceNo}${vatExempt ? " (بدون ضريبة - سعودي)" : ""}`);
             }}><ReceiptIcon className="h-4 w-4 me-1" />إنشاء فاتورة من الخدمات المعلقة</Button>
           </div>
         </TabsContent>
@@ -350,7 +351,7 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
         <TabsContent value="payments">
           <PaymentsTab caseId={c.id} onChange={(p) => {
             const newCase = { ...c };
-            const np = caseTotals(newCase, invoices, [...payments, p]);
+            const np = caseTotals(newCase, invoices, [...payments, p], patient);
             let payStatus: typeof c.payStatus = "unpaid";
             if (np.paid >= np.total && np.total > 0) payStatus = "paid";
             else if (np.paid > 0) payStatus = "partial";

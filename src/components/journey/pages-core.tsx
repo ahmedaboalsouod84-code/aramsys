@@ -279,22 +279,88 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
 /* ============================================================
    PATIENT LIST + REGISTER
    ============================================================ */
+const NATIONALITIES: { code: string; label: string }[] = [
+  { code: "SA", label: "سعودي" },
+  { code: "EG", label: "مصري" },
+  { code: "YE", label: "يمني" },
+  { code: "SD", label: "سوداني" },
+  { code: "SY", label: "سوري" },
+  { code: "JO", label: "أردني" },
+  { code: "PK", label: "باكستاني" },
+  { code: "IN", label: "هندي" },
+  { code: "PH", label: "فلبيني" },
+  { code: "BD", label: "بنغلاديشي" },
+  { code: "OTHER", label: "أخرى" },
+];
+
+const ACCEPTED_TYPES = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+const MAX_FILE_MB = 5;
+
+const blankPatientForm = {
+  idNumber: "", name_ar: "", phone: "", nationality: "SA",
+  gender: "M", dob: "", employer: "",
+  attachments: [] as import("@/lib/journey-store").PatientAttachment[],
+};
+
 export function PatientsPage() {
   const [patients, setPatients] = usePatients();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ fileNo: "", name_ar: "", phone: "", gender: "M" });
+  const [form, setForm] = useState(blankPatientForm);
 
-  const filtered = patients.filter(p => !q || p.name_ar.includes(q) || p.phone.includes(q) || p.fileNo.includes(q));
+  const filtered = patients.filter(p => !q
+    || p.name_ar.includes(q) || p.phone.includes(q)
+    || p.fileNo.includes(q) || p.idNumber.includes(q));
+
+  const onFiles = async (files: FileList | null) => {
+    if (!files) return;
+    const out: typeof form.attachments = [];
+    for (const f of Array.from(files)) {
+      if (f.size > MAX_FILE_MB * 1024 * 1024) {
+        toast.error(`${f.name}: يتجاوز ${MAX_FILE_MB}MB`);
+        continue;
+      }
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result));
+        r.onerror = () => rej(r.error);
+        r.readAsDataURL(f);
+      });
+      out.push({
+        id: crypto.randomUUID(), name: f.name, type: f.type,
+        size: f.size, dataUrl, uploadedAt: new Date().toISOString(),
+      });
+    }
+    setForm(s => ({ ...s, attachments: [...s.attachments, ...out] }));
+  };
 
   const submit = () => {
-    if (!form.name_ar || !form.phone) return toast.error("الاسم والجوال مطلوبان");
-    const fileNo = form.fileNo || `F-${String(patients.length + 1).padStart(4, "0")}`;
-    setPatients(prev => [...prev, { id: crypto.randomUUID(), fileNo, name_ar: form.name_ar, phone: form.phone, gender: form.gender as "M" | "F" }]);
-    setForm({ fileNo: "", name_ar: "", phone: "", gender: "M" });
+    const idNumber = form.idNumber.trim();
+    if (!idNumber) return toast.error("رقم الهوية/الإقامة مطلوب");
+    if (!/^[0-9]{6,15}$/.test(idNumber)) return toast.error("رقم الهوية يجب أن يكون أرقاماً (6-15 خانة)");
+    if (!form.name_ar.trim()) return toast.error("الاسم مطلوب");
+    if (!form.phone.trim()) return toast.error("رقم التواصل مطلوب");
+    if (!form.nationality) return toast.error("الجنسية مطلوبة");
+    if (patients.some(p => p.idNumber === idNumber)) return toast.error("رقم الهوية مسجل مسبقاً");
+
+    setPatients(prev => [...prev, {
+      id: idNumber,
+      fileNo: idNumber,
+      idNumber,
+      nationality: form.nationality,
+      name_ar: form.name_ar.trim(),
+      phone: form.phone.trim(),
+      gender: form.gender as "M" | "F",
+      dob: form.dob || undefined,
+      employer: form.employer.trim() || undefined,
+      attachments: form.attachments,
+    }]);
+    setForm(blankPatientForm);
     setOpen(false);
     toast.success("تم تسجيل المريض");
   };
+
+  const natLabel = (c: string) => NATIONALITIES.find(n => n.code === c)?.label || c;
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -302,45 +368,101 @@ export function PatientsPage() {
         <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><ClipboardList className="h-6 w-6" /></div>
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">المرضى</h1>
-          <p className="text-sm text-muted-foreground">{patients.length} ملف مريض</p>
+          <p className="text-sm text-muted-foreground">{patients.length} ملف مريض • رقم الملف = رقم الهوية</p>
         </div>
         <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 me-1" />مريض جديد</Button>
       </header>
 
       <div className="relative max-w-md">
         <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={q} onChange={e => setQ(e.target.value)} placeholder="ابحث بالاسم/الجوال/الملف…" className="ps-9" />
+        <Input value={q} onChange={e => setQ(e.target.value)} placeholder="ابحث بالاسم/الجوال/رقم الهوية…" className="ps-9" />
       </div>
 
-      <Card><CardContent className="p-0">
+      <Card><CardContent className="p-0 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
-            <tr><th className="text-start px-3 py-2">رقم الملف</th><th className="text-start px-3 py-2">الاسم</th><th className="text-start px-3 py-2">الجوال</th><th className="text-start px-3 py-2">الجنس</th></tr>
+            <tr>
+              <th className="text-start px-3 py-2">رقم الهوية</th>
+              <th className="text-start px-3 py-2">الاسم</th>
+              <th className="text-start px-3 py-2">الجنسية</th>
+              <th className="text-start px-3 py-2">الجوال</th>
+              <th className="text-start px-3 py-2">جهة العمل</th>
+              <th className="text-center px-3 py-2">الضريبة</th>
+              <th className="text-center px-3 py-2">مرفقات</th>
+            </tr>
           </thead>
           <tbody>{filtered.map(p => (
             <tr key={p.id} className="border-t hover:bg-muted/30">
-              <td className="px-3 py-2 font-mono text-xs">{p.fileNo}</td>
+              <td className="px-3 py-2 font-mono text-xs">{p.idNumber}</td>
               <td className="px-3 py-2 font-medium">{p.name_ar}</td>
+              <td className="px-3 py-2">{natLabel(p.nationality)}</td>
               <td className="px-3 py-2 font-mono text-xs">{p.phone}</td>
-              <td className="px-3 py-2">{p.gender === "M" ? "ذكر" : "أنثى"}</td>
+              <td className="px-3 py-2 text-muted-foreground">{p.employer || "—"}</td>
+              <td className="px-3 py-2 text-center">
+                {p.nationality === "SA"
+                  ? <Badge variant="secondary">معفى</Badge>
+                  : <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300">15%</Badge>}
+              </td>
+              <td className="px-3 py-2 text-center text-xs">{p.attachments?.length || 0}</td>
             </tr>
           ))}</tbody>
         </table>
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>تسجيل مريض جديد</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3 py-2">
-            <div><Label>رقم الملف (اختياري)</Label><Input value={form.fileNo} onChange={e => setForm({ ...form, fileNo: e.target.value })} /></div>
-            <div><Label>الجوال</Label><Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
-            <div className="col-span-2"><Label>الاسم</Label><Input value={form.name_ar} onChange={e => setForm({ ...form, name_ar: e.target.value })} /></div>
+            <div className="col-span-2">
+              <Label>رقم الهوية / الإقامة <span className="text-destructive">*</span></Label>
+              <Input value={form.idNumber} inputMode="numeric"
+                onChange={e => setForm({ ...form, idNumber: e.target.value.replace(/\D/g, "") })}
+                placeholder="سيكون رقم الملف داخل النظام" />
+            </div>
+            <div className="col-span-2"><Label>الاسم الكامل <span className="text-destructive">*</span></Label>
+              <Input value={form.name_ar} onChange={e => setForm({ ...form, name_ar: e.target.value })} /></div>
+            <div><Label>رقم التواصل <span className="text-destructive">*</span></Label>
+              <Input value={form.phone} inputMode="tel"
+                onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
+            <div>
+              <Label>الجنسية <span className="text-destructive">*</span></Label>
+              <Select value={form.nationality} onValueChange={v => setForm({ ...form, nationality: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {NATIONALITIES.map(n => <SelectItem key={n.code} value={n.code}>{n.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {form.nationality === "SA"
+                ? <p className="text-xs text-muted-foreground mt-1">سعودي: لا تُحتسب ضريبة قيمة مضافة</p>
+                : <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">غير سعودي: تُضاف ضريبة 15%</p>}
+            </div>
+            <div><Label>تاريخ الميلاد</Label>
+              <Input type="date" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} /></div>
             <div>
               <Label>الجنس</Label>
               <Select value={form.gender} onValueChange={v => setForm({ ...form, gender: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value="M">ذكر</SelectItem><SelectItem value="F">أنثى</SelectItem></SelectContent>
               </Select>
+            </div>
+            <div className="col-span-2"><Label>جهة العمل</Label>
+              <Input value={form.employer} onChange={e => setForm({ ...form, employer: e.target.value })} /></div>
+
+            <div className="col-span-2 space-y-2">
+              <Label>المرفقات (PDF, JPG, PNG, DOC) — حد أقصى {MAX_FILE_MB}MB لكل ملف</Label>
+              <Input type="file" multiple accept={ACCEPTED_TYPES}
+                onChange={e => { onFiles(e.target.files); e.target.value = ""; }} />
+              {form.attachments.length > 0 && (
+                <ul className="space-y-1 text-xs border rounded-md p-2">
+                  {form.attachments.map(a => (
+                    <li key={a.id} className="flex items-center justify-between gap-2">
+                      <span className="truncate">📎 {a.name} <span className="text-muted-foreground">({Math.round(a.size / 1024)} KB)</span></span>
+                      <button type="button" className="text-destructive hover:underline"
+                        onClick={() => setForm(s => ({ ...s, attachments: s.attachments.filter(x => x.id !== a.id) }))}>إزالة</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>إلغاء</Button><Button onClick={submit}>حفظ</Button></DialogFooter>
