@@ -29,7 +29,7 @@ export function MobileBottomNav() {
     >
       <ul className="grid grid-cols-5">
         {items.map((it) => {
-          const active = isActive(it.key);
+          const active = isActive(it.to);
           return (
             <li key={it.key}>
               <button
