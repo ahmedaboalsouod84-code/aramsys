@@ -9,15 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MeRouteImport } from './routes/me'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppsRouteImport } from './routes/apps'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MModuleRouteImport } from './routes/m.$module'
 import { Route as MModuleIndexRouteImport } from './routes/m.$module.index'
 import { Route as MModuleSubRouteImport } from './routes/m.$module.$sub'
 
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsRoute = AppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,34 +61,61 @@ const MModuleSubRoute = MModuleSubRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
   '/m/$module/': typeof MModuleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/m/$module/$sub': typeof MModuleSubRoute
   '/m/$module': typeof MModuleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/apps': typeof AppsRoute
   '/login': typeof LoginRoute
+  '/me': typeof MeRoute
   '/m/$module': typeof MModuleRouteWithChildren
   '/m/$module/$sub': typeof MModuleSubRoute
   '/m/$module/': typeof MModuleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/m/$module' | '/m/$module/$sub' | '/m/$module/'
+  fullPaths:
+    | '/'
+    | '/alerts'
+    | '/apps'
+    | '/login'
+    | '/me'
+    | '/m/$module'
+    | '/m/$module/$sub'
+    | '/m/$module/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/m/$module/$sub' | '/m/$module'
+  to:
+    | '/'
+    | '/alerts'
+    | '/apps'
+    | '/login'
+    | '/me'
+    | '/m/$module/$sub'
+    | '/m/$module'
   id:
     | '__root__'
     | '/'
+    | '/alerts'
+    | '/apps'
     | '/login'
+    | '/me'
     | '/m/$module'
     | '/m/$module/$sub'
     | '/m/$module/'
@@ -78,17 +123,41 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
+  AppsRoute: typeof AppsRoute
   LoginRoute: typeof LoginRoute
+  MeRoute: typeof MeRoute
   MModuleRoute: typeof MModuleRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps': {
+      id: '/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof AppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -137,7 +206,10 @@ const MModuleRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
+  AppsRoute: AppsRoute,
   LoginRoute: LoginRoute,
+  MeRoute: MeRoute,
   MModuleRoute: MModuleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
