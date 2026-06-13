@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Navigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,10 @@ function LoginPage() {
   const { user, login } = useAuth();
   const { t, lang, setLang } = useI18n();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const isMobileRaw = useIsMobile();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const isMobile = hydrated && isMobileRaw;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const [err, setErr] = useState("");
