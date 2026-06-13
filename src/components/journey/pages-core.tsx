@@ -337,7 +337,7 @@ export function PatientsPage() {
   const submit = () => {
     const idNumber = form.idNumber.trim();
     if (!idNumber) return toast.error("رقم الهوية/الإقامة مطلوب");
-    if (!/^[0-9]{6,15}$/.test(idNumber)) return toast.error("رقم الهوية يجب أن يكون أرقاماً (6-15 خانة)");
+    if (!/^[0-9]{10}$/.test(idNumber)) return toast.error("رقم الهوية/الإقامة يجب أن يتكون من 10 أرقام بالضبط");
     if (!form.name_ar.trim()) return toast.error("الاسم مطلوب");
     if (!form.phone.trim()) return toast.error("رقم التواصل مطلوب");
     if (!form.nationality) return toast.error("الجنسية مطلوبة");
