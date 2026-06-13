@@ -66,6 +66,14 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "journey:batches": AccountingBatchesPage,
   "journey:profitability": DoctorProfitabilityPage,
   "journey:activity": ActivityLogPage,
+  // Aliases: route legacy/medical patient pages to the unified Journey screens
+  "medical:patient-search": PatientsPage,
+  "medical:patients": PatientsPage,
+  "medical:radiology": RadiologyDashboard,
+  "medical:pending-invoices": InvoicesPage,
+  "medical:outpatient-billing": InvoicesPage,
+  "medical:inpatient-billing": InvoicesPage,
+  "medical:clinic-reception": ReceptionDashboard,
 };
 
 function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }) {
