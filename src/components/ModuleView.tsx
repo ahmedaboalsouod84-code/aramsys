@@ -19,6 +19,32 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { canAccessModule, canAccessSub, allowedSubs } from "@/lib/permissions";
 import { getFormSchema, type Field } from "@/lib/formSchemas";
+import { MedicineDispensingPage } from "@/components/erp/MedicineDispensingPage";
+import { CostCentersPage } from "@/components/erp/CostCentersPage";
+import { ProfitCentersPage } from "@/components/erp/ProfitCentersPage";
+import { JournalEntriesPage } from "@/components/erp/JournalEntriesPage";
+import { GeneralLedgerPage } from "@/components/erp/GeneralLedgerPage";
+import { ChartOfAccountsPage } from "@/components/erp/ChartOfAccountsPage";
+import { CostDistributionPage } from "@/components/erp/CostDistributionPage";
+import { ClinicProfitabilityPage } from "@/components/erp/ClinicProfitabilityPage";
+import { FinancialStatementsPage } from "@/components/erp/FinancialStatementsPage";
+import { ErpDashboardPage } from "@/components/erp/ErpDashboardPage";
+
+const ERP_PAGES: Record<string, () => JSX.Element> = {
+  "inventory:medicine-dispensing": MedicineDispensingPage,
+  "inventory:pharmacy": MedicineDispensingPage,
+  "accounting:erp-dashboard": ErpDashboardPage,
+  "accounting:chart-of-accounts": ChartOfAccountsPage,
+  "accounting:journal": JournalEntriesPage,
+  "accounting:ledger": GeneralLedgerPage,
+  "accounting:cost-centers": CostCentersPage,
+  "accounting:profit-centers": ProfitCentersPage,
+  "accounting:cost-distribution": CostDistributionPage,
+  "accounting:clinic-profitability": ClinicProfitabilityPage,
+  "accounting:financial-statements": FinancialStatementsPage,
+  "accounting:income-statement": FinancialStatementsPage,
+  "accounting:balance-sheet": FinancialStatementsPage,
+};
 
 function AccessDenied({ titleEn, titleAr }: { titleEn: string; titleAr: string }) {
   const { t } = useI18n();
@@ -211,6 +237,9 @@ export function SubPageView({ moduleSlug, subSlug }: { moduleSlug: string; subSl
   if (role && !canAccessSub(role, moduleSlug, subSlug)) {
     return <AccessDenied titleEn={sub.en} titleAr={sub.ar} />;
   }
+
+  const ErpPage = ERP_PAGES[`${moduleSlug}:${subSlug}`];
+  if (ErpPage) return <ErpPage />;
 
 
 
