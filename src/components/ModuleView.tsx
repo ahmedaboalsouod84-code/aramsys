@@ -103,7 +103,7 @@ export function ModuleView({ slug }: { slug: string }) {
   return (
     <div className="space-y-4 xl:space-y-6">
       {/* Mobile app header */}
-      <MobileBackHeader title={title} />
+      <MobileBackHeader title={title} to="/" />
 
       <div className="p-4 xl:p-6 pt-0 xl:pt-6 space-y-6">
         <nav className="hidden xl:flex items-center gap-1.5 text-sm text-muted-foreground">
