@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAccounts, useJournal, accountBalance, fmtSAR } from "@/lib/erp-store";
+import { usePendingBankCodes } from "@/lib/bank-recon-store";
 import { ListTree, Search } from "lucide-react";
 
 const TYPE_LABEL: Record<string, { en: string; ar: string }> = {
@@ -18,6 +19,7 @@ export function ChartOfAccountsPage() {
   const { t, lang } = useI18n();
   const [accounts] = useAccounts();
   const [entries] = useJournal();
+  const pending = usePendingBankCodes();
   const [q, setQ] = useState("");
 
   const grouped = useMemo(() => {
@@ -58,10 +60,14 @@ export function ChartOfAccountsPage() {
                   <tbody>
                     {g.items.map((a) => {
                       const bal = accountBalance(a.code, entries);
+                      const isPending = pending.has(a.code);
                       return (
-                        <tr key={a.code} className="border-b last:border-0 hover:bg-muted/30">
+                        <tr key={a.code} className={`border-b last:border-0 hover:bg-muted/30 ${isPending ? "bg-amber-50/40 dark:bg-amber-950/10" : ""}`}>
                           <td className="px-3 py-2 font-mono text-xs w-16">{a.code}</td>
-                          <td className="px-3 py-2">{lang === "ar" ? a.name_ar : a.name_en}</td>
+                          <td className="px-3 py-2">
+                            {lang === "ar" ? a.name_ar : a.name_en}
+                            {isPending && <Badge variant="outline" className="ms-2 text-[10px]">{lang === "ar" ? "معلق" : "Pending"}</Badge>}
+                          </td>
                           <td className="px-3 py-2 text-end font-mono">
                             <Badge variant="outline">{fmtSAR(bal.balance)}</Badge>
                           </td>

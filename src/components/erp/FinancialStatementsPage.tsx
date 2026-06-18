@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAccounts, useJournal, accountBalance, fmtSAR } from "@/lib/erp-store";
-import { FileBarChart, CheckCircle2, AlertCircle } from "lucide-react";
+import { usePendingBankCodes } from "@/lib/bank-recon-store";
+import { FileBarChart, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 
 export function FinancialStatementsPage() {
   const { t, lang } = useI18n();
   const [accounts] = useAccounts();
   const [entries] = useJournal();
+  const pending = usePendingBankCodes();
   const [view, setView] = useState<"income" | "balance">("income");
 
   return (
@@ -59,10 +61,15 @@ export function FinancialStatementsPage() {
   }
 
   function BalanceSheet() {
-    const assets = accounts.filter((a) => a.type === "asset");
+    // SAP-style: H0002 / H0003 are PENDING bank movements — excluded from
+    // official asset totals. Only H0001 (main bank control) is the official
+    // bank balance shown on the Balance Sheet.
+    const officialAssets = accounts.filter((a) => a.type === "asset" && !pending.has(a.code));
+    const pendingAssets = accounts.filter((a) => a.type === "asset" && pending.has(a.code));
     const liabilities = accounts.filter((a) => a.type === "liability");
     const equity = accounts.filter((a) => a.type === "equity");
-    const assetTotal = assets.reduce((s, a) => s + accountBalance(a.code, entries).balance, 0);
+    const assetTotal = officialAssets.reduce((s, a) => s + accountBalance(a.code, entries).balance, 0);
+    const pendingTotal = pendingAssets.reduce((s, a) => s + accountBalance(a.code, entries).balance, 0);
     const liabTotal = liabilities.reduce((s, a) => s + Math.abs(accountBalance(a.code, entries).balance), 0);
     const eqTotal = equity.reduce((s, a) => s + Math.abs(accountBalance(a.code, entries).balance), 0);
     const liabEq = liabTotal + eqTotal;
@@ -79,13 +86,43 @@ export function FinancialStatementsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Section title={t("Assets", "الأصول")} items={assets.map((a) => ({ code: a.code, label: lang === "ar" ? a.name_ar : a.name_en, amount: accountBalance(a.code, entries).balance }))} total={assetTotal} />
+          <Section title={t("Assets", "الأصول")} items={officialAssets.map((a) => ({ code: a.code, label: lang === "ar" ? a.name_ar : a.name_en, amount: accountBalance(a.code, entries).balance }))} total={assetTotal} />
           <Section title={t("Liabilities", "الخصوم")} items={liabilities.map((a) => ({ code: a.code, label: lang === "ar" ? a.name_ar : a.name_en, amount: Math.abs(accountBalance(a.code, entries).balance) }))} total={liabTotal} />
           <Section title={t("Equity", "حقوق الملكية")} items={equity.map((a) => ({ code: a.code, label: lang === "ar" ? a.name_ar : a.name_en, amount: Math.abs(accountBalance(a.code, entries).balance) }))} total={eqTotal} />
           <div className="flex items-center justify-between border-t-2 border-foreground/30 pt-3">
             <span className="font-semibold">{t("Liabilities + Equity", "الخصوم + حقوق الملكية")}</span>
             <span className="font-bold">{fmtSAR(liabEq)}</span>
           </div>
+
+          {pendingAssets.length > 0 && (
+            <div className="space-y-1.5 pt-4 border-t border-dashed">
+              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5" />
+                {t("Pending bank movements (memo only — not included in totals)",
+                   "حركات بنكية معلقة (مذكرة فقط — لا تدخل في الإجماليات)")}
+              </div>
+              <div className="divide-y border border-dashed rounded-md bg-muted/20">
+                {pendingAssets.map((a) => (
+                  <div key={a.code} className="flex items-center justify-between px-3 py-1.5 text-sm">
+                    <span>
+                      <span className="font-mono text-xs text-muted-foreground me-2">{a.code}</span>
+                      {lang === "ar" ? a.name_ar : a.name_en}
+                      <Badge variant="outline" className="ms-2 text-[10px]">{t("Pending", "معلق")}</Badge>
+                    </span>
+                    <span className="font-mono text-muted-foreground">{fmtSAR(accountBalance(a.code, entries).balance)}</span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between px-3 py-2 text-sm bg-muted/30">
+                  <span className="text-muted-foreground">{t("Pending total (awaiting reconciliation)", "إجمالي المعلق (بانتظار التسوية)")}</span>
+                  <span className="font-mono text-muted-foreground">{fmtSAR(pendingTotal)}</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t("These balances become part of the official bank position only after a reconciliation settlement is approved.",
+                   "تنضم هذه الأرصدة إلى الرصيد البنكي الرسمي فقط بعد اعتماد التسوية البنكية.")}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
