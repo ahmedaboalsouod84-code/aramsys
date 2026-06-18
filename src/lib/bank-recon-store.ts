@@ -133,6 +133,36 @@ function useStore<T>(key: string, seed: T) {
 /* =====================  Public hooks  ===================== */
 
 export const useBanks = () => useStore<Bank[]>("banks_list", []);
+
+/* ---------- Pending bank-movement classification ----------
+ * H0002 (deposits) and H0003 (payments) hold REAL postings but are
+ * "pending bank movements". They MUST NOT be aggregated into the
+ * official bank balance shown in Balance Sheet / Trial Balance / Cash
+ * Position. Only H0001 (the main control account) represents the
+ * official bank position.
+ */
+export function getPendingBankCodes(): Set<string> {
+  const banks = load<Bank[]>("banks_list", []);
+  const s = new Set<string>();
+  for (const b of banks) { s.add(b.depositsAccount); s.add(b.paymentsAccount); }
+  return s;
+}
+export function getMainBankCodes(): Set<string> {
+  const banks = load<Bank[]>("banks_list", []);
+  return new Set(banks.map((b) => b.mainAccount));
+}
+export function isPendingBankAccount(code: string): boolean {
+  return getPendingBankCodes().has(code);
+}
+export function isMainBankAccount(code: string): boolean {
+  return getMainBankCodes().has(code);
+}
+export function usePendingBankCodes(): Set<string> {
+  const [banks] = useBanks();
+  const s = new Set<string>();
+  for (const b of banks) { s.add(b.depositsAccount); s.add(b.paymentsAccount); }
+  return s;
+}
 export const useBankTxns = () => useStore<BankTxn[]>("bank_txns", []);
 export const useBankStatements = () => useStore<BankStatementLine[]>("bank_statements", []);
 export const useSettlements = () => useStore<Settlement[]>("bank_settlements", []);
