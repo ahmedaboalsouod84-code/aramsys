@@ -335,6 +335,11 @@ export function ReconciliationDashboardPage() {
 
       {bank && (
         <>
+          <div className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+            {t("Rule: H0001 reflects the last reconciled bank balance only. Deposits (H0002) and payments (H0003) are pending bank movements and are NOT added to H0001 until this reconciliation is approved.",
+               "قاعدة: H0001 يعرض آخر رصيد بنكي مُسوَّى فقط. الإيداعات (H0002) والمدفوعات (H0003) حركات معلقة ولا تنعكس على H0001 إلا بعد اعتماد هذه التسوية.")}
+          </div>
+
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-base">{t("Period", "الفترة")}</CardTitle></CardHeader>
             <CardContent className="grid sm:grid-cols-3 gap-3">
@@ -347,12 +352,13 @@ export function ReconciliationDashboardPage() {
 
           {recon && (
             <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <Stat label={t("Opening (H0001)", "الافتتاحي (H0001)")} value={fmt(recon.opening, bank.currency)} />
-              <Stat label={t("Total Deposits (H0002)", "إجمالي الإيداعات")} value={fmt(recon.totalDeposits, bank.currency)} tone="up" />
-              <Stat label={t("Total Payments (H0003)", "إجمالي المدفوعات")} value={fmt(recon.totalPayments, bank.currency)} tone="down" />
-              <Stat label={t("Calculated Balance", "الرصيد المحسوب")} value={fmt(recon.calculatedBalance, bank.currency)} strong />
+              <Stat label={t("Last reconciled balance (H0001)", "آخر رصيد مُسوَّى (H0001)")} value={fmt(recon.opening, bank.currency)} strong />
+              <Stat label={t("Pending Deposits (H0002)", "إيداعات معلقة (H0002)")} value={fmt(recon.totalDeposits, bank.currency)} tone="up" />
+              <Stat label={t("Pending Payments (H0003)", "مدفوعات معلقة (H0003)")} value={fmt(recon.totalPayments, bank.currency)} tone="down" />
+              <Stat label={t("Expected Balance (H0001 + H0002 − H0003)", "الرصيد المتوقع")} value={fmt(recon.calculatedBalance, bank.currency)} strong />
             </div>
           )}
+
 
           {recon && (
             <Card>
