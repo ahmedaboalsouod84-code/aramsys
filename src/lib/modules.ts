@@ -213,6 +213,13 @@ export const MODULES: ModuleDef[] = [
     desc_en: "Checks, loans, deposits, guarantees, transfers",
     desc_ar: "الشيكات والقروض والودائع والكفالات والتحويلات",
     items: [
+      { slug: "bank-list", en: "Bank List", ar: "قائمة البنوك" },
+      { slug: "bank-txns", en: "Bank Transactions", ar: "حركات البنك" },
+      { slug: "reconciliation", en: "Reconciliation Dashboard", ar: "لوحة التسوية البنكية" },
+      { slug: "unreconciled", en: "Unreconciled Transactions", ar: "الحركات غير المسوّاة" },
+      { slug: "statement-import", en: "Statement Import", ar: "استيراد كشف البنك" },
+      { slug: "settlements", en: "Settlement History", ar: "سجل التسويات" },
+      { slug: "approvals", en: "Reconciliation Approval", ar: "اعتماد التسويات" },
       { slug: "check-requests", en: "Check Requests", ar: "طلبات شيكات" },
       { slug: "check-orders", en: "Check Orders", ar: "أوامر شيكات" },
       { slug: "issuance", en: "Check Issuance", ar: "إصدار الشيكات" },

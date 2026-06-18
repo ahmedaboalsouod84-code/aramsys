@@ -37,6 +37,10 @@ import {
   InvoicesPage, PaymentsPage, RadiologyDashboard, PacketsPage,
   MaterialRequestsPage, AccountingBatchesPage, DoctorProfitabilityPage, ActivityLogPage,
 } from "@/components/journey/pages-ops";
+import {
+  BankListPage, BankTransactionsPage, ReconciliationDashboardPage,
+  SettlementHistoryPage, UnreconciledPage, StatementImportPage, ApprovalWorkflowPage,
+} from "@/components/bank/BankReconPages";
 
 const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
@@ -66,6 +70,14 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "journey:batches": AccountingBatchesPage,
   "journey:profitability": DoctorProfitabilityPage,
   "journey:activity": ActivityLogPage,
+  // Banks — SAP-style reconciliation
+  "banks:bank-list": BankListPage,
+  "banks:bank-txns": BankTransactionsPage,
+  "banks:reconciliation": ReconciliationDashboardPage,
+  "banks:unreconciled": UnreconciledPage,
+  "banks:statement-import": StatementImportPage,
+  "banks:settlements": SettlementHistoryPage,
+  "banks:approvals": ApprovalWorkflowPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
