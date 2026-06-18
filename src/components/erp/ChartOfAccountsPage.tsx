@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAccounts, useJournal, accountBalance, fmtSAR } from "@/lib/erp-store";
+import { usePendingBankCodes } from "@/lib/bank-recon-store";
 import { ListTree, Search } from "lucide-react";
 
 const TYPE_LABEL: Record<string, { en: string; ar: string }> = {
