@@ -564,7 +564,7 @@ export function StatementImportPage() {
 
   const doImport = () => {
     if (!bank || !raw.trim()) return;
-    const parsed: Omit<Parameters<typeof importStatementLines>[1][number], never>[] = [];
+    const parsed: { date: string; ref: string; description: string; debit: number; credit: number }[] = [];
     for (const line of raw.split("\n")) {
       const cells = line.split(/[,\t;]/).map((c) => c.trim());
       if (cells.length < 4) continue;
