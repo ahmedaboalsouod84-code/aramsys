@@ -1,6 +1,6 @@
 // Procurement document chain: PR → PO → GR → VI → CN
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,14 +17,13 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, ArrowRight, Info } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import {
   useSuppliers, usePRs, usePOs, useGRs, useVIs, useCNs, useOffers,
   nextRef, fmtSAR, poTotals, viTotals, cnTotals, statusBadge, STATUS_LABEL,
-  type PurchaseRequest, type PurchaseOrder, type GoodsReceipt, type VendorInvoice,
-  type CreditNote, type PrLine, type PoLine, type GrLine, type ViLine, type CnLine, type Supplier,
+  type PrLine, type PoLine, type GrLine, type ViLine, type CnLine, type Supplier,
 } from "@/lib/procurement-store";
 
 function StatusBadge({ s }: { s: string }) {
