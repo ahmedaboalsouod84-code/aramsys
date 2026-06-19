@@ -387,11 +387,20 @@ function ServicesTab({ caseId, log }: { caseId: string; onChange: (c: PatientCas
   const c = cases.find(x => x.id === caseId)!;
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ serviceId: "", qty: 1, unitPrice: 0, free: false, reason: "" });
+  const canEditPrice = role === "doctor" || role === "medical_manager" || role === "admin";
 
   const addService = () => {
     if (!form.serviceId) return toast.error("اختر خدمة");
     const sv = services.find(s => s.id === form.serviceId)!;
-    const price = form.free ? 0 : (form.unitPrice || sv.price);
+    const defaultPrice = sv.price;
+    const requestedPrice = form.free ? 0 : (form.unitPrice || defaultPrice);
+    if (!canEditPrice && (form.free || requestedPrice !== defaultPrice)) {
+      return toast.error("تعديل السعر أو جعل الخدمة مجانية مقصور على الطبيب");
+    }
+    if (requestedPrice !== defaultPrice && !form.free && !form.reason.trim()) {
+      return toast.error("أدخل سبب تعديل السعر");
+    }
+    const price = requestedPrice;
     const cs: CaseService = {
       id: crypto.randomUUID(), serviceId: sv.id, code: sv.code, name_ar: sv.name_ar,
       qty: form.qty, unitPrice: price, originalPrice: sv.price,
