@@ -248,6 +248,7 @@ export const MODULES: ModuleDef[] = [
       { slug: "cost-distribution", en: "Cost Distribution", ar: "توزيع التكاليف" },
       { slug: "clinic-profitability", en: "Clinic Profitability", ar: "ربحية العيادات" },
       { slug: "financial-statements", en: "Financial Statements", ar: "القوائم المالية" },
+      { slug: "customer-ledger", en: "Customer Ledger", ar: "كشف حساب العملاء" },
       { slug: "account-movements", en: "Account Movements", ar: "حركات الحساب" },
       { slug: "statement", en: "Account Statement", ar: "كشف حساب" },
       { slug: "trial-balance", en: "Trial Balance", ar: "ميزان المراجعة" },
