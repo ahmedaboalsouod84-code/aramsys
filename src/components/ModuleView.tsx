@@ -44,6 +44,7 @@ import {
 } from "@/components/bank/BankReconPages";
 import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
 import { BnplClaimsPage } from "@/components/bnpl/BnplClaimsPage";
+import { PostingRulesPage } from "@/components/erp/PostingRulesPage";
 
 
 
