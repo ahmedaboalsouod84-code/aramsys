@@ -23,7 +23,7 @@ const NS = "posting:";
  * 1. Account Mapping (editable, persisted)
  * ============================================================ */
 
-export type AccountMapV1 = {
+export type AccountMap = {
   // Receivables
   patientReceivable: string;       // 1130
   insuranceReceivable: string;     // 1135
