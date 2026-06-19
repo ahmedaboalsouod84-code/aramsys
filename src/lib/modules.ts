@@ -197,6 +197,8 @@ export const MODULES: ModuleDef[] = [
     desc_en: "Vouchers, custody, transfers",
     desc_ar: "السندات والعهد والتحويلات",
     items: [
+      { slug: "reception-shift", en: "Reception Shift", ar: "خزينة الاستقبال" },
+      { slug: "treasury-approval", en: "Treasury Approval", ar: "اعتماد الخزينة" },
       { slug: "vouchers", en: "Cash Vouchers", ar: "سندات الصرف" },
       { slug: "custody", en: "Employee Custody", ar: "عهدة الموظفين" },
       { slug: "supplier-payments", en: "Supplier Payments", ar: "دفعات الموردين" },
