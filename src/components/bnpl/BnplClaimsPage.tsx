@@ -106,6 +106,18 @@ export function BnplClaimsPage() {
 
   function advance(c: BnplClaim, next: BnplClaim["status"], extra?: Partial<BnplClaim>) {
     setClaims(prev => prev.map(x => x.id === c.id ? { ...x, status: next, ...extra } : x));
+    if (next === "settled") {
+      import("@/lib/posting-rules").then(({ postEvent }) => {
+        postEvent("bnpl:settlement", {
+          kind: "bnpl.settled",
+          ref: c.ref,
+          date: new Date().toISOString(),
+          provider: c.provider,
+          gross: c.gross,
+          net: c.net,
+        });
+      });
+    }
     toast.success(`${c.ref} → ${claimStatusLabel(next)}`);
   }
 
