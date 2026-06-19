@@ -51,7 +51,7 @@ export const ROLE_PERMS: Record<Role, RolePerms> = {
   hr: { hr: true, projects: true, archive: true, sms: ["send", "reports"] },
   accountant: {
     accounting: true, cash: true, banks: true, assets: true,
-    sales: ["invoices", "returns", "customers", "agreements"],
+    sales: ["invoices", "returns", "customers", "agreements", "bnpl-claims"],
     purchases: ["invoices", "return-invoices", "suppliers", "expenses", "taxes"],
     sms: ["send", "reports"],
     journey: ["invoices", "payments", "batches", "profitability", "activity"],
