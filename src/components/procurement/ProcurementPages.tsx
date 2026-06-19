@@ -562,7 +562,7 @@ export function VendorInvoicesPage() {
       </div>
       <Card><CardContent className="p-0">
         <Table>
-          <TableHeader><TableRow><TableHead>المرجع</TableHead><TableHead>رقم المورد</TableHead><TableHead>GR / PO</TableHead><TableHead>المورد</TableHead><TableHead>الإجمالي</TableHead><TableHead>الحالة</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>المرجع</TableHead><TableHead>رقم المورد</TableHead><TableHead>GR / PO</TableHead><TableHead>المورد</TableHead><TableHead>الإجمالي</TableHead><TableHead>الحالة</TableHead><TableHead>إجراء</TableHead></TableRow></TableHeader>
           <TableBody>
             {vis.map((v) => (
               <TableRow key={v.id}>
@@ -572,9 +572,18 @@ export function VendorInvoicesPage() {
                 <TableCell>{suppliers.find((s) => s.id === v.supplierId)?.name_ar || "—"}</TableCell>
                 <TableCell>{fmtSAR(v.total)}</TableCell>
                 <TableCell><StatusBadge s={v.status} /></TableCell>
+                <TableCell>
+                  {(v.status === "approved" || v.status === "partial_credited") && (
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setVis((p) => p.map((x) => x.id === v.id ? { ...x, status: "paid" } : x));
+                      postEvent("procurement:pay", { kind: "supplier.paid", ref: v.ref, date: new Date().toISOString(), amount: v.total, method: "bank" });
+                      toast.success(`تم سداد ${v.ref}`);
+                    }}>سداد</Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
-            {vis.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">لا فواتير</TableCell></TableRow>}
+            {vis.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">لا فواتير</TableCell></TableRow>}
           </TableBody>
         </Table>
       </CardContent></Card>
