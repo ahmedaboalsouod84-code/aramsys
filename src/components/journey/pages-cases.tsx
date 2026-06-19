@@ -486,71 +486,169 @@ function InvoicesTab({ caseId }: { caseId: string }) {
   );
 }
 
-/* --- Payments Tab --- */
+/* --- Payments Tab (Billing Redesign: Case → Payment → Invoice) ---
+   New rule: an Invoice is NEVER created standalone. Triggering a payment
+   auto-bills all pending non-free services and links the payment to the
+   resulting invoice. Two payment modes: Partial / Full. */
 function PaymentsTab({ caseId, onChange }: { caseId: string; onChange: (p: Payment) => void }) {
+  const [cases, setCases] = useCases();
+  const [patients] = usePatients();
   const [payments, setPayments] = usePayments();
   const [invoices, setInvoices] = useInvoices();
   const [, setActivity] = useActivity();
   const { user, role } = useAuth();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<{ amount: number; method: PaymentMethod; reference: string; invoiceId: string }>({ amount: 0, method: "cash", reference: "", invoiceId: "" });
-  const caseInvoices = invoices.filter(i => i.caseId === caseId && i.status !== "cancelled" && i.status !== "paid");
+  const [mode, setMode] = useState<"full" | "partial">("full");
+  const [form, setForm] = useState<{ amount: number; method: PaymentMethod; reference: string }>({
+    amount: 0, method: "cash", reference: "",
+  });
+
+  const c = cases.find(x => x.id === caseId)!;
+  const patient = patients.find(p => p.id === c.patientId);
+  const vatExempt = patient?.nationality === "SA";
+
+  // Open invoices (unpaid/partial) for this case
+  const openInvoices = invoices.filter(i => i.caseId === caseId && i.status !== "cancelled" && i.status !== "paid");
+  const openRemaining = openInvoices.reduce((s, i) => s + (i.total - i.paid), 0);
+
+  // Pending (non-free, not-yet-invoiced) services awaiting billing
+  const pendingServices = c.services.filter(s => !s.invoiced && !s.free);
+  const pendingSubtotal = pendingServices.reduce((s, x) => s + x.qty * x.unitPrice, 0);
+  const pendingVat = vatExempt ? 0 : pendingServices.reduce(
+    (s, x) => s + (x.taxable ? x.qty * x.unitPrice * (x.vat / 100) : 0), 0);
+  const pendingTotal = pendingSubtotal + pendingVat;
+
+  // What this payment will cover this round
+  const totalDueNow = openRemaining + pendingTotal;
   const list = payments.filter(p => p.caseId === caseId);
+
+  const openDialog = () => {
+    if (totalDueNow <= 0) {
+      return toast.error("لا توجد مبالغ مستحقة. أضف خدمات في تبويب الخدمات أولاً.");
+    }
+    setMode("full");
+    setForm({ amount: totalDueNow, method: "cash", reference: "" });
+    setOpen(true);
+  };
+
+  const onModeChange = (m: "full" | "partial") => {
+    setMode(m);
+    if (m === "full") setForm(f => ({ ...f, amount: totalDueNow }));
+    else if (form.amount >= totalDueNow) setForm(f => ({ ...f, amount: Math.round(totalDueNow / 2) }));
+  };
 
   const submit = () => {
     if (!form.amount || form.amount <= 0) return toast.error("أدخل المبلغ");
+    if (form.amount > totalDueNow + 0.01) return toast.error(`المبلغ يتجاوز المستحق (${fmtSAR(totalDueNow)})`);
+    if (mode === "full" && Math.abs(form.amount - totalDueNow) > 0.01) {
+      return toast.error("في وضع الدفع الكامل يجب أن يساوي المبلغ المستحق بالضبط");
+    }
+
+    // 1) Auto-bill pending services into a NEW invoice (if any)
+    let newInvoiceId: string | undefined;
+    if (pendingServices.length > 0) {
+      const lines = pendingServices.map(s => ({
+        serviceId: s.serviceId, code: s.code, name_ar: s.name_ar,
+        qty: s.qty, unitPrice: s.unitPrice,
+        taxable: s.taxable && !vatExempt, vat: vatExempt ? 0 : s.vat,
+      }));
+      const inv: Invoice = {
+        id: crypto.randomUUID(),
+        invoiceNo: nextInvoiceNo(invoices),
+        caseId, patientId: c.patientId, doctorId: c.doctorId,
+        lines, subtotal: pendingSubtotal, vatAmount: pendingVat, discount: 0,
+        total: pendingTotal, paid: 0, status: "pending",
+        createdBy: user?.username || "?", createdAt: new Date().toISOString(),
+      };
+      newInvoiceId = inv.id;
+      setInvoices(prev => [inv, ...prev]);
+      setCases(prev => prev.map(x => x.id !== caseId ? x : {
+        ...x,
+        services: x.services.map(s => pendingServices.find(p => p.id === s.id)
+          ? { ...s, invoiced: true, invoiceId: inv.id } : s),
+      }));
+    }
+
+    // 2) Allocate the payment across open invoices (FIFO) + the new one
+    const targetInvoices = [
+      ...openInvoices.map(i => ({ id: i.id, remaining: i.total - i.paid })),
+      ...(newInvoiceId ? [{ id: newInvoiceId, remaining: pendingTotal }] : []),
+    ];
+    let remaining = form.amount;
+    const allocations: { id: string; alloc: number }[] = [];
+    for (const ti of targetInvoices) {
+      if (remaining <= 0) break;
+      const alloc = Math.min(ti.remaining, remaining);
+      if (alloc > 0) { allocations.push({ id: ti.id, alloc }); remaining -= alloc; }
+    }
+    setInvoices(prev => prev.map(i => {
+      const a = allocations.find(x => x.id === i.id);
+      if (!a) return i;
+      const newPaid = i.paid + a.alloc;
+      const status: Invoice["status"] = newPaid >= i.total - 0.005 ? "paid" : "partial";
+      return { ...i, paid: newPaid, status };
+    }));
+
+    // 3) Record the payment (linked to the first invoice it touched)
     const p: Payment = {
       id: crypto.randomUUID(), ref: nextRef("PMT", payments),
-      caseId, invoiceId: form.invoiceId || undefined,
+      caseId, invoiceId: allocations[0]?.id,
       amount: form.amount, method: form.method, reference: form.reference,
       receivedBy: user?.username || "?", at: new Date().toISOString(),
+      note: mode === "full" ? "دفع كامل" : "دفع جزئي",
     };
     setPayments(prev => [p, ...prev]);
-    // Unified posting layer — single source of truth for GL entries.
+
+    // 4) Unified posting layer
     import("@/lib/posting-rules").then(({ postEvent }) => {
       postEvent("reception:payment", {
         kind: "payment.received",
-        ref: p.ref,
-        date: p.at,
-        patientRef: caseId,
-        method: p.method,
-        amount: p.amount,
+        ref: p.ref, date: p.at, patientRef: caseId,
+        method: p.method, amount: p.amount,
       });
     });
-    // Update invoice paid
-    if (form.invoiceId) {
-      setInvoices(prev => prev.map(i => {
-        if (i.id !== form.invoiceId) return i;
-        const newPaid = i.paid + form.amount;
-        const status: Invoice["status"] = newPaid >= i.total ? "paid" : "partial";
-        return { ...i, paid: newPaid, status };
-      }));
-    }
-    setActivity(prev => [{ id: crypto.randomUUID(), at: new Date().toISOString(),
-      user: user?.username || "?", role: role || "?", action: "تحصيل دفعة", caseId, detail: `${fmtSAR(form.amount)} - ${form.method}` }, ...prev]);
+
+    setActivity(prev => [{
+      id: crypto.randomUUID(), at: new Date().toISOString(),
+      user: user?.username || "?", role: role || "?",
+      action: `تحصيل ${mode === "full" ? "كامل" : "جزئي"}`,
+      caseId, detail: `${fmtSAR(form.amount)} - ${form.method}${newInvoiceId ? " + فاتورة جديدة" : ""}`,
+    }, ...prev]);
+
     onChange(p);
     setOpen(false);
-    setForm({ amount: 0, method: "cash", reference: "", invoiceId: "" });
-    toast.success("تم التحصيل");
+    toast.success(`تم التحصيل${newInvoiceId ? " مع توليد فاتورة جديدة" : ""}`);
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end"><Button size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4 me-1" />تحصيل دفعة</Button></div>
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-3 text-sm grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div><div className="text-xs text-muted-foreground">خدمات غير مفوترة</div><div className="font-mono font-medium">{fmtSAR(pendingTotal)}</div></div>
+          <div><div className="text-xs text-muted-foreground">رصيد فواتير مفتوحة</div><div className="font-mono font-medium">{fmtSAR(openRemaining)}</div></div>
+          <div><div className="text-xs text-muted-foreground">المستحق الآن</div><div className="font-mono font-semibold text-primary">{fmtSAR(totalDueNow)}</div></div>
+          <div className="flex items-end justify-end">
+            <Button size="sm" onClick={openDialog} disabled={totalDueNow <= 0}>
+              <Plus className="h-4 w-4 me-1" />تحصيل
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card><CardContent className="p-0 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground"><tr>
             <th className="text-start px-3 py-2">المرجع</th><th className="text-start px-3 py-2">التاريخ</th>
-            <th className="text-end px-3 py-2">المبلغ</th><th className="text-start px-3 py-2">الطريقة</th>
-            <th className="text-start px-3 py-2">المرجع الخارجي</th><th className="text-start px-3 py-2">المستلم</th>
+            <th className="text-end px-3 py-2">المبلغ</th><th className="text-start px-3 py-2">النوع</th>
+            <th className="text-start px-3 py-2">الطريقة</th><th className="text-start px-3 py-2">المستلم</th>
           </tr></thead>
           <tbody>{list.map(p => (
             <tr key={p.id} className="border-t">
               <td className="px-3 py-2 font-mono text-xs">{p.ref}</td>
               <td className="px-3 py-2">{new Date(p.at).toLocaleString("ar-SA")}</td>
               <td className="px-3 py-2 text-end font-mono">{fmtSAR(p.amount)}</td>
+              <td className="px-3 py-2"><Badge variant="outline">{p.note || "—"}</Badge></td>
               <td className="px-3 py-2"><Badge variant="secondary">{p.method}</Badge></td>
-              <td className="px-3 py-2 font-mono text-xs">{p.reference || "—"}</td>
               <td className="px-3 py-2">{p.receivedBy}</td>
             </tr>
           ))}
@@ -561,34 +659,49 @@ function PaymentsTab({ caseId, onChange }: { caseId: string; onChange: (p: Payme
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>تحصيل دفعة</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3 py-2">
-            <div className="col-span-2">
-              <Label>الفاتورة (اختياري)</Label>
-              <Select value={form.invoiceId} onValueChange={v => setForm({ ...form, invoiceId: v })}>
-                <SelectTrigger><SelectValue placeholder="بدون فاتورة محددة" /></SelectTrigger>
-                <SelectContent>{caseInvoices.map(i => <SelectItem key={i.id} value={i.id}>{i.invoiceNo} - متبقي {fmtSAR(i.total - i.paid)}</SelectItem>)}</SelectContent>
-              </Select>
+          <div className="space-y-3 py-2">
+            <div className="rounded-md bg-muted p-2 text-xs space-y-1">
+              <div className="flex justify-between"><span>خدمات معلقة (ستُفوتر تلقائياً)</span><span className="font-mono">{fmtSAR(pendingTotal)}</span></div>
+              <div className="flex justify-between"><span>رصيد فواتير مفتوحة</span><span className="font-mono">{fmtSAR(openRemaining)}</span></div>
+              <div className="flex justify-between border-t pt-1 font-semibold"><span>المستحق الآن</span><span className="font-mono">{fmtSAR(totalDueNow)}</span></div>
             </div>
-            <div><Label>المبلغ</Label><Input type="number" value={form.amount} onChange={e => setForm({ ...form, amount: +e.target.value })} /></div>
+
             <div>
-              <Label>طريقة الدفع</Label>
-              <Select value={form.method} onValueChange={v => setForm({ ...form, method: v as PaymentMethod })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">نقدي</SelectItem><SelectItem value="card">شبكة</SelectItem>
-                  <SelectItem value="bank">تحويل بنكي</SelectItem><SelectItem value="insurance">تأمين</SelectItem>
-                  <SelectItem value="tabby">Tabby</SelectItem><SelectItem value="tamara">Tamara</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>نوع الدفع</Label>
+              <div className="flex gap-2 mt-1">
+                <Button type="button" size="sm" variant={mode === "full" ? "default" : "outline"} onClick={() => onModeChange("full")} className="flex-1">دفع كامل</Button>
+                <Button type="button" size="sm" variant={mode === "partial" ? "default" : "outline"} onClick={() => onModeChange("partial")} className="flex-1">دفع جزئي</Button>
+              </div>
             </div>
-            <div className="col-span-2"><Label>رقم المرجع</Label><Input value={form.reference} onChange={e => setForm({ ...form, reference: e.target.value })} /></div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>المبلغ</Label>
+                <Input type="number" value={form.amount}
+                  onChange={e => setForm({ ...form, amount: +e.target.value })}
+                  disabled={mode === "full"} />
+              </div>
+              <div>
+                <Label>طريقة الدفع</Label>
+                <Select value={form.method} onValueChange={v => setForm({ ...form, method: v as PaymentMethod })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">نقدي</SelectItem><SelectItem value="card">شبكة</SelectItem>
+                    <SelectItem value="bank">تحويل بنكي</SelectItem><SelectItem value="insurance">تأمين</SelectItem>
+                    <SelectItem value="tabby">Tabby</SelectItem><SelectItem value="tamara">Tamara</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2"><Label>رقم المرجع الخارجي</Label><Input value={form.reference} onChange={e => setForm({ ...form, reference: e.target.value })} /></div>
+            </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>إلغاء</Button><Button onClick={submit}>تحصيل</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>إلغاء</Button><Button onClick={submit}>تحصيل وفوترة</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 /* --- Radiology Tab --- */
 function RadiologyTab({ caseId }: { caseId: string }) {
