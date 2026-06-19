@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
