@@ -396,6 +396,9 @@ export function GoodsReceiptsPage() {
     postEvent("procurement:gr", { kind: "gr.posted", ref: grRef, date: new Date().toISOString(), amount: subtotal, inventoryKind: "materials" });
     setOpen(false); setPoId(""); setWarehouse(""); setNotes(""); setLines([]);
     toast.success("تم ترحيل GR وقيد المخزون");
+  };
+
+
 
   return (
     <PageShell title="إيصالات الاستلام (GR)" desc="تأكيد الاستلام الفعلي للأصناف من المورد وفحصها. لا تُنشأ فاتورة مورد بدون GR.">
