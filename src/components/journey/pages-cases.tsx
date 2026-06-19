@@ -529,6 +529,17 @@ function PaymentsTab({ caseId, onChange }: { caseId: string; onChange: (p: Payme
       receivedBy: user?.username || "?", at: new Date().toISOString(),
     };
     setPayments(prev => [p, ...prev]);
+    // Unified posting layer — single source of truth for GL entries.
+    import("@/lib/posting-rules").then(({ postEvent }) => {
+      postEvent("reception:payment", {
+        kind: "payment.received",
+        ref: p.ref,
+        date: p.at,
+        patientRef: caseId,
+        method: p.method,
+        amount: p.amount,
+      });
+    });
     // Update invoice paid
     if (form.invoiceId) {
       setInvoices(prev => prev.map(i => {
