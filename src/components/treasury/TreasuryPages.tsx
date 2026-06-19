@@ -66,7 +66,7 @@ export function ReceptionShiftPage() {
       id: crypto.randomUUID(),
       ref: nextShiftRef(shifts),
       cashierId: username,
-      cashierName: user?.name || username,
+      cashierName: user?.name_ar || user?.name_en || username,
       station,
       openedAt: new Date().toISOString(),
       openingFloat,
