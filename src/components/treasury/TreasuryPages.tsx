@@ -290,7 +290,7 @@ export function TreasuryApprovalPage() {
       approvedAt: new Date().toISOString(),
     } : x));
     const amount = s.countedCash || 0;
-    const variance = s.expectedCash != null ? (s.expectedCash - amount) : 0;
+    const variance = s.systemCash != null ? (s.systemCash - amount) : 0;
     import("@/lib/posting-rules").then(({ postEvent }) => {
       postEvent("treasury:handover", {
         kind: "treasury.handover",
