@@ -173,12 +173,12 @@ export const useBankActivity = () => useStore<ActivityEntry[]>("bank_activity", 
 // instantly in the Chart of Accounts and General Ledger screens.
 
 function readAccounts(): Account[] {
-  try { return JSON.parse(localStorage.getItem(NS + "accounts") || "[]"); }
+  try { return JSON.parse(localStorage.getItem(NS + "accounts_v2") || "[]"); }
   catch { return []; }
 }
 function writeAccounts(list: Account[]) {
-  localStorage.setItem(NS + "accounts", JSON.stringify(list));
-  window.dispatchEvent(new CustomEvent("erp:change", { detail: { key: "accounts" } }));
+  localStorage.setItem(NS + "accounts_v2", JSON.stringify(list));
+  window.dispatchEvent(new CustomEvent("erp:change", { detail: { key: "accounts_v2" } }));
 }
 function readJournal(): JournalEntry[] {
   try { return JSON.parse(localStorage.getItem(NS + "journal") || "[]"); }

@@ -216,7 +216,7 @@ export function useStore<T>(key: string, seed: T) {
 }
 
 /* ---------- Convenience hooks ---------- */
-export const useAccounts = () => useStore<Account[]>("accounts", SEED_ACCOUNTS);
+export const useAccounts = () => useStore<Account[]>("accounts_v2", SEED_ACCOUNTS);
 export const useCostCenters = () => useStore<CostCenter[]>("cost_centers", SEED_COST_CENTERS);
 export const useMedicines = () => useStore<Medicine[]>("medicines", SEED_MEDICINES);
 export const useJournal = () => useStore<JournalEntry[]>("journal", SEED_JOURNAL);
