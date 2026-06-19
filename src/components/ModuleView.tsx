@@ -44,6 +44,7 @@ import {
 } from "@/components/bank/BankReconPages";
 import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
 import { BnplClaimsPage } from "@/components/bnpl/BnplClaimsPage";
+import { PostingRulesPage } from "@/components/erp/PostingRulesPage";
 
 
 
@@ -51,6 +52,7 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
   "inventory:pharmacy": MedicineDispensingPage,
   "accounting:erp-dashboard": ErpDashboardPage,
+  "accounting:posting-rules": PostingRulesPage,
   "accounting:chart-of-accounts": ChartOfAccountsPage,
   "accounting:journal": JournalEntriesPage,
   "accounting:ledger": GeneralLedgerPage,
