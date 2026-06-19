@@ -22,6 +22,7 @@ import {
 } from "@/lib/journey-store";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { CaseLifecycle } from "./CaseLifecycle";
 
 /* ============================================================
    CASES LIST + DETAIL (with tabs)
@@ -292,23 +293,12 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
           {t.remaining > 0 && <Card className="border-amber-500/40 bg-amber-500/5"><CardContent className="p-4 text-sm flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-amber-600" /> يوجد مبلغ متبقٍ {fmtSAR(t.remaining)} - لا يمكن إغلاق الحالة قبل التحصيل أو اعتماد الذمم.
           </CardContent></Card>}
-          <div className="flex flex-wrap gap-2">
-            {!c.medicallyCompleted && role !== "reception" && (
-              <Button onClick={() => {
-                updateCase(p => ({ ...p, medicallyCompleted: true, status: t.remaining > 0 ? "pending_payment" : "medically_completed" }));
-                log("تعليم كمكتمل طبياً");
-                toast.success("تم");
-              }}>تعليم كمكتمل طبياً</Button>
-            )}
-            {c.status !== "closed" && c.status !== "cancelled" && (
-              <Button variant="outline" onClick={() => {
-                if (t.remaining > 0 && !confirm("يوجد مبلغ متبقٍ. اعتمد كذمم وأغلق؟")) return;
-                updateCase(p => ({ ...p, status: "closed", closedAt: new Date().toISOString() }));
-                log("إغلاق الحالة");
-                toast.success("تم الإغلاق");
-              }}>إغلاق الحالة</Button>
-            )}
-          </div>
+          <CaseLifecycle
+            c={c}
+            totals={{ total: t.total, paid: t.paid, remaining: t.remaining }}
+            onChange={(next) => updateCase(() => next)}
+            onLog={(action, from, to) => log(action, undefined, from, to)}
+          />
         </TabsContent>
 
         <TabsContent value="services">
