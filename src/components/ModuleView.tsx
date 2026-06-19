@@ -88,6 +88,8 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   // Cash & Treasury — Reception Shifts + Approval (SAP-style Clearing)
   "cash:reception-shift": ReceptionShiftPage,
   "cash:treasury-approval": TreasuryApprovalPage,
+  // BNPL — Tabby / Tamara claim builder + commission engine
+  "sales:bnpl-claims": BnplClaimsPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
