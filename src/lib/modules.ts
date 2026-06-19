@@ -137,6 +137,7 @@ export const MODULES: ModuleDef[] = [
       { slug: "agreements", en: "Agreements", ar: "الاتفاقيات" },
       { slug: "shipping", en: "Shipping", ar: "الشحن" },
       { slug: "claims", en: "Customer Claims", ar: "مطالبات العملاء" },
+      { slug: "bnpl-claims", en: "BNPL Claims (Tabby/Tamara)", ar: "مطالبات Tabby / Tamara" },
       { slug: "website", en: "Website", ar: "إدارة الموقع" },
       { slug: "surveys", en: "Surveys", ar: "الاستبيانات" },
       { slug: "subscriptions", en: "Subscriptions", ar: "الاشتراكات" },
