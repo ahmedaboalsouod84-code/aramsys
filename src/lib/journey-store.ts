@@ -63,8 +63,40 @@ export function isVatExempt(p?: Patient | null): boolean {
   return !!p && p.nationality === "SA";
 }
 
-export type CaseStatus = "active" | "pending_payment" | "medically_completed" | "closed" | "cancelled";
+// Full 8-stage case lifecycle from the gap analysis.
+// Backwards-compat: legacy values "active" and "pending_payment" remain valid.
+export type CaseStatus =
+  | "registered"
+  | "under_diagnosis"
+  | "under_treatment"
+  | "medically_completed"
+  | "pending_payment"      // = Awaiting Payment
+  | "partially_paid"
+  | "fully_paid"
+  | "closed"
+  | "cancelled"
+  | "active";              // legacy alias of under_treatment
 export type PayStatus = "unpaid" | "partial" | "paid" | "refunded";
+
+/** Derive the canonical case status from medical + payment state. */
+export function computeCaseStatus(
+  current: CaseStatus,
+  medicallyCompleted: boolean,
+  invoiceTotal: number,
+  paidTotal: number,
+): CaseStatus {
+  if (current === "cancelled" || current === "closed") return current;
+  if (!medicallyCompleted) {
+    if (current === "registered" || current === "under_diagnosis") return current;
+    return "under_treatment";
+  }
+  // Medically completed → status is driven by payment.
+  if (invoiceTotal <= 0) return "medically_completed";
+  const remaining = invoiceTotal - paidTotal;
+  if (paidTotal <= 0) return "pending_payment";
+  if (remaining > 0.005) return "partially_paid";
+  return "fully_paid";
+}
 
 export type CaseService = {
   id: string;
@@ -392,9 +424,14 @@ export function logActivity(setActivity: (u: (p: ActivityEntry[]) => ActivityEnt
 
 export function statusColor(s: CaseStatus | PayStatus | InvoiceStatus | RadiologyStatus | MaterialReqStatus | PacketStatus | BatchStatus): string {
   const map: Record<string, string> = {
+    registered: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
+    under_diagnosis: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300",
+    under_treatment: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
     active: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
     pending_payment: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
     medically_completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+    partially_paid: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+    fully_paid: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
     closed: "bg-muted text-muted-foreground",
     cancelled: "bg-destructive/15 text-destructive",
     unpaid: "bg-destructive/15 text-destructive",
@@ -423,7 +460,9 @@ export function statusColor(s: CaseStatus | PayStatus | InvoiceStatus | Radiolog
 }
 
 export const STATUS_LABEL_AR: Record<string, string> = {
+  registered: "مسجلة", under_diagnosis: "تحت التشخيص", under_treatment: "تحت العلاج",
   active: "نشط", pending_payment: "بانتظار الدفع", medically_completed: "مكتمل طبياً",
+  partially_paid: "مدفوع جزئياً", fully_paid: "مدفوع بالكامل",
   closed: "مغلق", cancelled: "ملغي",
   unpaid: "غير مدفوع", partial: "مدفوع جزئياً", paid: "مدفوع", refunded: "مسترد",
   draft: "مسودة", pending: "بانتظار الدفع",
