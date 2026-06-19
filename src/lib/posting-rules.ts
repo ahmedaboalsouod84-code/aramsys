@@ -46,6 +46,9 @@ export type AccountMap = {
 
   // Liabilities
   vatPayable: string;              // 2310
+  vatInputReceivable: string;      // 1320 (recoverable input VAT)
+  accountsPayable: string;         // 2110
+  grIrClearing: string;            // 2115 (Goods Received / Invoice Received)
   bnplCommissionPayable: string;   // 2150
   bankFeesPayable: string;         // 2160
 
@@ -54,6 +57,7 @@ export type AccountMap = {
   bankFeesExpense: string;         // 5320
   medicineCogs: string;            // 5210
   materialsCogs: string;           // 5220
+  insuranceWriteOff: string;       // 5410
 
   // Inventory
   medicineInventory: string;       // 1210
@@ -76,12 +80,16 @@ const DEFAULT_MAP: AccountMap = {
   pharmacyRevenue: "4150",
   otherRevenue: "4190",
   vatPayable: "2310",
+  vatInputReceivable: "1320",
+  accountsPayable: "2110",
+  grIrClearing: "2115",
   bnplCommissionPayable: "2150",
   bankFeesPayable: "2160",
   bnplCommissionExpense: "5310",
   bankFeesExpense: "5320",
   medicineCogs: "5210",
   materialsCogs: "5220",
+  insuranceWriteOff: "5410",
   medicineInventory: "1210",
   materialsInventory: "1220",
 };
