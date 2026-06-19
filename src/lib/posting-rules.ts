@@ -58,10 +58,23 @@ export type AccountMap = {
   medicineCogs: string;            // 5210
   materialsCogs: string;           // 5220
   insuranceWriteOff: string;       // 5410
+  salariesExpense: string;         // 5110
+  gosiExpense: string;             // 5115 (employer share)
+  depreciationExpense: string;     // 5510
 
   // Inventory
   medicineInventory: string;       // 1210
   materialsInventory: string;      // 1220
+
+  // Fixed Assets
+  fixedAssetsCost: string;         // 1510 (gross cost)
+  accumDepreciation: string;       // 1590 (contra-asset)
+  fixedAssetGainLoss: string;      // 4910 / 5910
+
+  // Payroll Liabilities
+  salariesPayable: string;         // 2210
+  gosiPayable: string;             // 2220
+  employeeAdvances: string;        // 1140
 };
 
 const DEFAULT_MAP: AccountMap = {
@@ -90,8 +103,17 @@ const DEFAULT_MAP: AccountMap = {
   medicineCogs: "5210",
   materialsCogs: "5220",
   insuranceWriteOff: "5410",
+  salariesExpense: "5110",
+  gosiExpense: "5115",
+  depreciationExpense: "5510",
   medicineInventory: "1210",
   materialsInventory: "1220",
+  fixedAssetsCost: "1510",
+  accumDepreciation: "1590",
+  fixedAssetGainLoss: "4910",
+  salariesPayable: "2210",
+  gosiPayable: "2220",
+  employeeAdvances: "1140",
 };
 
 /* ============================================================
@@ -229,6 +251,50 @@ export type PostingEvent =
       date: string;
       gross: number;            // amount claimed (= receivable closed)
       net: number;              // amount received in bank
+    }
+  // Payroll posted → Salary expense DR / GOSI payable + Net salaries payable + Advances recovered CR
+  | {
+      kind: "payroll.posted";
+      ref: string;
+      date: string;
+      gross: number;            // total gross salaries
+      gosiEmployee: number;     // withheld from employee
+      gosiEmployer: number;     // employer share (additional expense)
+      advancesRecovered: number;
+      costCenterId?: string;
+    }
+  // Payroll paid → settle Salaries Payable from bank
+  | {
+      kind: "payroll.paid";
+      ref: string;
+      date: string;
+      amount: number;
+      method?: "bank" | "cash";
+    }
+  // Fixed asset acquired → Cost DR / Bank or AP CR
+  | {
+      kind: "asset.acquired";
+      ref: string;
+      date: string;
+      cost: number;
+      paymentMethod?: "bank" | "cash" | "ap";
+    }
+  // Periodic depreciation → Depreciation Expense DR / Accumulated Depreciation CR
+  | {
+      kind: "asset.depreciated";
+      ref: string;
+      date: string;
+      amount: number;
+      costCenterId?: string;
+    }
+  // Asset disposal → Accum.Dep DR + Bank DR (proceeds) + Loss DR / Gain CR / Asset Cost CR
+  | {
+      kind: "asset.disposed";
+      ref: string;
+      date: string;
+      cost: number;             // original gross cost
+      accumulated: number;      // accumulated depreciation to date
+      proceeds: number;         // cash received
     };
 
 
