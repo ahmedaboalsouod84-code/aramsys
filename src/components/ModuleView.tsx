@@ -42,6 +42,8 @@ import {
   BankListPage, BankTransactionsPage, ReconciliationDashboardPage,
   SettlementHistoryPage, UnreconciledPage, StatementImportPage, ApprovalWorkflowPage,
 } from "@/components/bank/BankReconPages";
+import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
+
 
 const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
