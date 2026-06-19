@@ -55,7 +55,7 @@ function useStore<T>(key: string, seed: T) {
   }, [key]);
   const upd = useCallback((next: T | ((p: T) => T)) => {
     setV(p => {
-      const x = typeof next === "function" ? (next as (p: T) => T)(prev => prev)(p) : next;
+      const x = typeof next === "function" ? (next as (p: T) => T)(p) : next;
       saveRaw(key, x);
       return x;
     });
