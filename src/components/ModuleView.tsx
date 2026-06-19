@@ -28,6 +28,7 @@ import { ChartOfAccountsPage } from "@/components/erp/ChartOfAccountsPage";
 import { CostDistributionPage } from "@/components/erp/CostDistributionPage";
 import { ClinicProfitabilityPage } from "@/components/erp/ClinicProfitabilityPage";
 import { FinancialStatementsPage } from "@/components/erp/FinancialStatementsPage";
+import { CustomerLedgerPage } from "@/components/erp/CustomerLedgerPage";
 import { ErpDashboardPage } from "@/components/erp/ErpDashboardPage";
 import {
   ServicesPage, ReceptionDashboard, DoctorDashboard, PatientsPage,
