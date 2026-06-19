@@ -57,6 +57,8 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "accounting:financial-statements": FinancialStatementsPage,
   "accounting:income-statement": FinancialStatementsPage,
   "accounting:balance-sheet": FinancialStatementsPage,
+  "accounting:customer-ledger": CustomerLedgerPage,
+  "sales:customers": CustomerLedgerPage,
   // Patient Journey
   "journey:reception-dash": ReceptionDashboard,
   "journey:doctor-dash": DoctorDashboard,
