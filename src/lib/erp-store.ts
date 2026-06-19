@@ -1,17 +1,27 @@
 // ERP shared mock data + localStorage hooks.
 // All data is persisted under namespaced keys and seeded on first read.
 import { useEffect, useState, useCallback } from "react";
+import { MEDICAL_COA } from "./coa-medical-seed";
 
 const NS = "erp:";
 
 /* ---------- Types ---------- */
+export type AccountLevel = "root" | "group" | "detail" | "contra";
 export type Account = {
   code: string;
   name_en: string;
   name_ar: string;
   type: "asset" | "liability" | "equity" | "revenue" | "expense";
-  parent?: string;
+  parent?: string | null;
+  level?: AccountLevel;
+  desc?: string;
 };
+
+/** Only detail/contra accounts may receive direct journal postings (SAP-style). */
+export function isPostableAccount(a: Account | undefined): boolean {
+  if (!a) return false;
+  return a.level === "detail" || a.level === "contra" || a.level === undefined;
+}
 
 export type CostCenter = {
   id: string;
@@ -58,38 +68,8 @@ export type DistributionRule = {
 };
 
 /* ---------- Seed data ---------- */
-const SEED_ACCOUNTS: Account[] = [
-  // Assets
-  { code: "1101", name_en: "Cash in Hand", name_ar: "النقدية في الصندوق", type: "asset" },
-  { code: "1102", name_en: "Bank Account Main", name_ar: "البنك الحساب الرئيسي", type: "asset" },
-  { code: "1111", name_en: "Patient Receivables", name_ar: "ذمم المرضى", type: "asset" },
-  { code: "1112", name_en: "Insurance Receivables", name_ar: "ذمم التأمين", type: "asset" },
-  { code: "1121", name_en: "Medicine Inventory", name_ar: "مخزون الأدوية", type: "asset" },
-  { code: "1211", name_en: "Medical Equipment", name_ar: "أجهزة طبية", type: "asset" },
-  { code: "1212", name_en: "Furniture & Fixtures", name_ar: "أثاث وتجهيزات", type: "asset" },
-  // Liabilities
-  { code: "2111", name_en: "Supplier Payables", name_ar: "ذمم الموردين", type: "liability" },
-  { code: "2121", name_en: "Employee Salaries Due", name_ar: "رواتب مستحقة", type: "liability" },
-  { code: "2131", name_en: "VAT Payable", name_ar: "ضريبة القيمة المضافة", type: "liability" },
-  { code: "2141", name_en: "Short-term Loans", name_ar: "قروض قصيرة الأجل", type: "liability" },
-  { code: "2211", name_en: "Long-term Loans", name_ar: "قروض طويلة الأجل", type: "liability" },
-  // Equity
-  { code: "3101", name_en: "Capital", name_ar: "رأس المال", type: "equity" },
-  { code: "3102", name_en: "Legal Reserve", name_ar: "الاحتياطي القانوني", type: "equity" },
-  { code: "3201", name_en: "Retained Earnings", name_ar: "أرباح محتجزة", type: "equity" },
-  // Revenue
-  { code: "4110", name_en: "Doctor Consultation Revenue", name_ar: "إيراد الكشف الطبي", type: "revenue" },
-  { code: "4120", name_en: "Lab Tests Revenue", name_ar: "إيراد التحاليل", type: "revenue" },
-  { code: "4130", name_en: "Radiology Revenue", name_ar: "إيراد الأشعة", type: "revenue" },
-  { code: "4200", name_en: "Medicine Sales", name_ar: "مبيعات الأدوية", type: "revenue" },
-  // Expenses
-  { code: "5110", name_en: "Doctor Salaries", name_ar: "رواتب الأطباء", type: "expense" },
-  { code: "5210", name_en: "Nurse Salaries", name_ar: "رواتب التمريض", type: "expense" },
-  { code: "5410", name_en: "Medicines Consumed", name_ar: "الأدوية المنصرفة", type: "expense" },
-  { code: "5610", name_en: "Electricity & Water", name_ar: "كهرباء ومياه", type: "expense" },
-  { code: "5640", name_en: "Rent Expense", name_ar: "إيجار", type: "expense" },
-  { code: "5710", name_en: "Administrative Expenses", name_ar: "مصروفات إدارية", type: "expense" },
-];
+// Full ZATCA-compliant medical-center chart of accounts (137 accounts).
+const SEED_ACCOUNTS: Account[] = MEDICAL_COA;
 
 const SEED_COST_CENTERS: CostCenter[] = [
   { id: "cc1", code: "CC1", name_en: "Clinic 1 - General", name_ar: "عيادة 1 - عامة", type: "clinic", area: 80, headcount: 6 },
