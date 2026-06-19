@@ -96,6 +96,14 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "cash:treasury-approval": TreasuryApprovalPage,
   // BNPL — Tabby / Tamara claim builder + commission engine
   "sales:bnpl-claims": BnplClaimsPage,
+  // Procurement chain: PR → PO → GR → VI → CN
+  "purchases:suppliers": SuppliersPage,
+  "purchases:requests": PurchaseRequestsPage,
+  "purchases:offers": SupplierOffersPage,
+  "purchases:orders": PurchaseOrdersPage,
+  "purchases:goods-receipts": GoodsReceiptsPage,
+  "purchases:invoices": VendorInvoicesPage,
+  "purchases:return-invoices": CreditNotesPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
