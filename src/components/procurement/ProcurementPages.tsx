@@ -117,7 +117,8 @@ export function SuppliersPage() {
  * 2) Purchase Requests (PR)
  * ========================================================= */
 export function PurchaseRequestsPage() {
-  const { username } = useAuth();
+  const { user } = useAuth();
+  const username = user?.username || "user";
   const [prs, setPrs] = usePRs();
   const [open, setOpen] = useState(false);
   const [department, setDepartment] = useState("");
@@ -218,7 +219,8 @@ export function PurchaseRequestsPage() {
  * 3) Purchase Orders (PO) — built from approved PRs
  * ========================================================= */
 export function PurchaseOrdersPage() {
-  const { username } = useAuth();
+  const { user } = useAuth();
+  const username = user?.username || "user";
   const [prs, setPrs] = usePRs();
   const [pos, setPos] = usePOs();
   const [suppliers] = useSuppliers();
@@ -335,7 +337,8 @@ export function PurchaseOrdersPage() {
  * 4) Goods Receipts (GR) — built from approved POs
  * ========================================================= */
 export function GoodsReceiptsPage() {
-  const { username } = useAuth();
+  const { user } = useAuth();
+  const username = user?.username || "user";
   const [pos, setPos] = usePOs();
   const [grs, setGrs] = useGRs();
   const [suppliers] = useSuppliers();
@@ -576,7 +579,8 @@ export function VendorInvoicesPage() {
  * 6) Credit Notes (CN) — replaces "Purchase Returns"
  * ========================================================= */
 export function CreditNotesPage() {
-  const { username } = useAuth();
+  const { user } = useAuth();
+  const username = user?.username || "user";
   const [vis, setVis] = useVIs();
   const [cns, setCns] = useCNs();
   const [suppliers] = useSuppliers();
