@@ -567,6 +567,44 @@ export function matchStatementLine(lineId: string, txnId: string | undefined) {
   );
 }
 
+/** Auto-match unmatched statement lines to bank transactions by amount, kind
+ *  and a small date window (±3 days). Returns count of newly matched lines. */
+export function autoMatchStatement(bankId: string, user?: string): number {
+  const lines = load<BankStatementLine[]>("bank_statements", []);
+  const txns  = load<BankTxn[]>("bank_txns", []);
+  const usedTxnIds = new Set(lines.filter(l => l.matchedTxnId).map(l => l.matchedTxnId!));
+  let matched = 0;
+
+  const next = lines.map((l) => {
+    if (l.bankId !== bankId || l.matchedTxnId) return l;
+    const wantKind: BankTxnKind | null =
+      l.credit > 0 ? "deposit" : l.debit > 0 ? "payment" : null;
+    if (!wantKind) return l;
+    const wantAmt = wantKind === "deposit" ? l.credit : l.debit;
+    const lDate = new Date(l.date).getTime();
+
+    const cand = txns.find((t) =>
+      t.bankId === bankId &&
+      !t.reversed &&
+      !t.settlementId &&
+      !usedTxnIds.has(t.id) &&
+      t.kind === wantKind &&
+      Math.abs(t.amount - wantAmt) < 0.01 &&
+      Math.abs(new Date(t.date).getTime() - lDate) <= 3 * 86_400_000,
+    );
+    if (!cand) return l;
+    usedTxnIds.add(cand.id);
+    matched++;
+    return { ...l, matchedTxnId: cand.id };
+  });
+
+  if (matched > 0) {
+    saveRaw("bank_statements", next);
+    pushActivity("STATEMENT_AUTOMATCH", `${matched} lines auto-matched`, user || "system");
+  }
+  return matched;
+}
+
 export function fmt(n: number, currency = "SAR") {
   return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(n || 0);
 }
