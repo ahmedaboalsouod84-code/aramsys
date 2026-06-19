@@ -43,6 +43,8 @@ import {
   SettlementHistoryPage, UnreconciledPage, StatementImportPage, ApprovalWorkflowPage,
 } from "@/components/bank/BankReconPages";
 import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
+import { BnplClaimsPage } from "@/components/bnpl/BnplClaimsPage";
+
 
 
 const ERP_PAGES: Record<string, React.ComponentType> = {
