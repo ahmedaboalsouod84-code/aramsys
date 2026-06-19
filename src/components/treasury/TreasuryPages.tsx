@@ -289,6 +289,17 @@ export function TreasuryApprovalPage() {
       ...x, status: "approved", approvedBy: user?.username || "accountant",
       approvedAt: new Date().toISOString(),
     } : x));
+    const amount = s.countedCash || 0;
+    const variance = s.systemCash != null ? (s.systemCash - amount) : 0;
+    import("@/lib/posting-rules").then(({ postEvent }) => {
+      postEvent("treasury:handover", {
+        kind: "treasury.handover",
+        ref: s.ref,
+        date: new Date().toISOString(),
+        amount,
+        variance,
+      });
+    });
     toast.success(`اعتمدت وردية ${s.ref}. تم تحويل المبلغ من حساب التسوية إلى النقدية.`);
     setSelected(null);
   }
