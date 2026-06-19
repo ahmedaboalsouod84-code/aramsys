@@ -142,7 +142,7 @@ export function JournalEntriesPage() {
             <Select value={l.accountCode} onValueChange={(v) => setLines(lines.map((x, j) => j === i ? { ...x, accountCode: v } : x))}>
               <SelectTrigger className="col-span-5 h-9"><SelectValue placeholder={t("Account", "الحساب")} /></SelectTrigger>
               <SelectContent>
-                {accounts.map((a) => <SelectItem key={a.code} value={a.code}>{a.code} · {lang === "ar" ? a.name_ar : a.name_en}</SelectItem>)}
+                {accounts.filter((a) => a.level === "detail" || a.level === "contra" || a.level === undefined).map((a) => <SelectItem key={a.code} value={a.code}>{a.code} · {lang === "ar" ? a.name_ar : a.name_en}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={l.costCenterId || ""} onValueChange={(v) => setLines(lines.map((x, j) => j === i ? { ...x, costCenterId: v } : x))}>
