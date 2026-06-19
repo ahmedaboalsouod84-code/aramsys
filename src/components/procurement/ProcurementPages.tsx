@@ -638,8 +638,10 @@ export function CreditNotesPage() {
       const any = newLines.some((vl) => vl.creditedQty > 0);
       return { ...v, lines: newLines, status: allCredited ? "credited" : any ? "partial_credited" : v.status };
     }));
+    const cnRef = nextRef("CN", cns);
+    postEvent("procurement:cn", { kind: "cn.applied", ref: cnRef, date: new Date().toISOString(), subtotal: totals.subtotal, vat: totals.vat, inventoryKind: "materials" });
     setOpen(false); setViId(""); setReason(""); setLines([]);
-    toast.success("تم إصدار إشعار دائن");
+    toast.success("تم إصدار إشعار دائن وقيد تخفيض الذمم");
   };
 
   return (
