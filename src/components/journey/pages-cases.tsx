@@ -307,36 +307,23 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
 
         <TabsContent value="invoices">
           <InvoicesTab caseId={c.id} />
-          <div className="mt-3">
-            <Button onClick={() => {
-              const pending = c.services.filter(s => !s.invoiced && !s.free);
-              if (pending.length === 0) return toast.error("لا توجد خدمات بانتظار الفوترة");
-              const vatExempt = patient?.nationality === "SA";
-              let subtotal = 0, vat = 0;
-              const lines = pending.map(s => {
-                const line = s.qty * s.unitPrice;
-                subtotal += line;
-                if (s.taxable && !vatExempt) vat += line * (s.vat / 100);
-                return { serviceId: s.serviceId, code: s.code, name_ar: s.name_ar, qty: s.qty, unitPrice: s.unitPrice, taxable: s.taxable && !vatExempt, vat: vatExempt ? 0 : s.vat };
-              });
-              const inv: Invoice = {
-                id: crypto.randomUUID(),
-                invoiceNo: nextInvoiceNo(invoices),
-                caseId: c.id, patientId: c.patientId, doctorId: c.doctorId,
-                lines, subtotal, vatAmount: vat, discount: 0, total: subtotal + vat,
-                paid: 0, status: "pending",
-                createdBy: user?.username || "?", createdAt: new Date().toISOString(),
-              };
-              setInvoices(prev => [inv, ...prev]);
-              setCases(prev => prev.map(x => x.id !== c.id ? x : {
-                ...x,
-                services: x.services.map(s => pending.find(p => p.id === s.id) ? { ...s, invoiced: true, invoiceId: inv.id } : s),
-              }));
-              log("إنشاء فاتورة", inv.invoiceNo);
-              toast.success(`تم إنشاء ${inv.invoiceNo}${vatExempt ? " (بدون ضريبة - سعودي)" : ""}`);
-            }}><ReceiptIcon className="h-4 w-4 me-1" />إنشاء فاتورة من الخدمات المعلقة</Button>
-          </div>
+          <Card className="mt-3 border-primary/30 bg-primary/5">
+            <CardContent className="p-3 text-sm flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 text-primary" />
+              <div>
+                <div className="font-medium">الفوترة الجديدة: لا تُنشأ فاتورة قبل الدفع</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  أضف الخدمات في تبويب «الخدمات» ثم انتقل إلى «المدفوعات» واختر
+                  <Badge variant="outline" className="mx-1">دفع جزئي</Badge>
+                  أو
+                  <Badge variant="outline" className="mx-1">دفع كامل</Badge>.
+                  ستُولَّد الفاتورة تلقائياً مع الدفعة وتُربط بها.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
+
 
         <TabsContent value="payments">
           <PaymentsTab caseId={c.id} onChange={(p) => {
