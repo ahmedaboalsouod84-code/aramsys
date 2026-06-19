@@ -180,7 +180,49 @@ export type PostingEvent =
       date: string;
       cost: number;
       costCenterId?: string;
+    }
+  // Procurement: Goods Receipt posted → Inventory DR / GR-IR Clearing CR
+  | {
+      kind: "gr.posted";
+      ref: string;
+      date: string;
+      amount: number;            // subtotal (cost ex-VAT) of accepted goods
+      inventoryKind?: "medicine" | "materials";
+    }
+  // Procurement: Vendor Invoice approved → GR-IR + VAT-Input DR / AP CR
+  | {
+      kind: "vi.approved";
+      ref: string;
+      date: string;
+      subtotal: number;
+      vat: number;
+    }
+  // Procurement: Credit Note applied → AP DR / Inventory + VAT-Input CR
+  | {
+      kind: "cn.applied";
+      ref: string;
+      date: string;
+      subtotal: number;
+      vat: number;
+      inventoryKind?: "medicine" | "materials";
+    }
+  // Procurement: Supplier payment → AP DR / Bank CR
+  | {
+      kind: "supplier.paid";
+      ref: string;
+      date: string;
+      amount: number;
+      method?: "bank" | "cash";
+    }
+  // Insurance claim settlement → Bank DR (+ WriteOff DR if haircut) / Insurance AR CR
+  | {
+      kind: "insurance.settled";
+      ref: string;
+      date: string;
+      gross: number;            // amount claimed (= receivable closed)
+      net: number;              // amount received in bank
     };
+
 
 /* ============================================================
  * 4. Helpers
