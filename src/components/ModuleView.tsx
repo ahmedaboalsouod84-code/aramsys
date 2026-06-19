@@ -57,6 +57,8 @@ import {
 import { ZatcaEInvoicingPage } from "@/components/erp/ZatcaEInvoicingPage";
 import { PayrollPage } from "@/components/hr/PayrollPage";
 import { AddAssetPage, AssetsListPage, DepreciationPage } from "@/components/assets/FixedAssetsPages";
+import { BudgetPage } from "@/components/erp/BudgetPage";
+import { PeriodClosePage } from "@/components/erp/PeriodClosePage";
 
 
 
@@ -126,6 +128,10 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "assets:add":          AddAssetPage,
   "assets:list":         AssetsListPage,
   "assets:depreciation": DepreciationPage,
+  // Budget vs Actual + Period Close & Year-End
+  "accounting:budget":         BudgetPage,
+  "accounting:final-accounts": PeriodClosePage,
+  "accounting:period-close":   PeriodClosePage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
