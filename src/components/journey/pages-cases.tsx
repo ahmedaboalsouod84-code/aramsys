@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { CaseLifecycle } from "./CaseLifecycle";
+import { TreatmentPlanTab, PrescriptionsTab } from "./pages-doctor";
 
 /* ============================================================
    CASES LIST + DETAIL (with tabs)
@@ -301,6 +302,14 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
             onChange={(next) => updateCase(() => next)}
             onLog={(action, from, to) => log(action, undefined, from, to)}
           />
+        </TabsContent>
+
+        <TabsContent value="plan">
+          <TreatmentPlanTab caseId={c.id} />
+        </TabsContent>
+
+        <TabsContent value="rx">
+          <PrescriptionsTab caseId={c.id} />
         </TabsContent>
 
         <TabsContent value="services">
