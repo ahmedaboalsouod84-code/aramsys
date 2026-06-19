@@ -243,6 +243,7 @@ export const MODULES: ModuleDef[] = [
     desc_ar: "القيود ودفتر الأستاذ وميزان المراجعة والقوائم المالية",
     items: [
       { slug: "erp-dashboard", en: "ERP Dashboard", ar: "لوحة تحكم النظام" },
+      { slug: "kpis", en: "Realtime KPIs", ar: "مؤشرات الأداء الحية" },
       { slug: "posting-rules", en: "Posting Rules", ar: "قواعد الترحيل" },
       { slug: "chart-of-accounts", en: "Chart of Accounts", ar: "دليل الحسابات" },
       { slug: "journal", en: "Journal Entries", ar: "القيود اليومية" },
