@@ -329,7 +329,50 @@ export function buildJournalForEvent(
       narrative = `Pharmacy dispense ${event.ref}`;
       break;
     }
+
+    case "gr.posted": {
+      const inv = event.inventoryKind === "materials" ? map.materialsInventory : map.medicineInventory;
+      lines.push(dr(inv, event.amount));
+      lines.push(cr(map.grIrClearing, event.amount));
+      narrative = `Goods receipt ${event.ref}`;
+      break;
+    }
+
+    case "vi.approved": {
+      lines.push(dr(map.grIrClearing, event.subtotal));
+      if (event.vat > 0) lines.push(dr(map.vatInputReceivable, event.vat));
+      lines.push(cr(map.accountsPayable, event.subtotal + event.vat));
+      narrative = `Vendor invoice ${event.ref}`;
+      break;
+    }
+
+    case "cn.applied": {
+      const inv = event.inventoryKind === "materials" ? map.materialsInventory : map.medicineInventory;
+      lines.push(dr(map.accountsPayable, event.subtotal + event.vat));
+      lines.push(cr(inv, event.subtotal));
+      if (event.vat > 0) lines.push(cr(map.vatInputReceivable, event.vat));
+      narrative = `Credit note ${event.ref}`;
+      break;
+    }
+
+    case "supplier.paid": {
+      const src = event.method === "cash" ? map.cashOnHand : map.bankMain;
+      lines.push(dr(map.accountsPayable, event.amount));
+      lines.push(cr(src, event.amount));
+      narrative = `Supplier payment ${event.ref}`;
+      break;
+    }
+
+    case "insurance.settled": {
+      const haircut = event.gross - event.net;
+      lines.push(dr(map.bankMain, event.net));
+      if (haircut > 0) lines.push(dr(map.insuranceWriteOff, haircut));
+      lines.push(cr(map.insuranceReceivable, event.gross));
+      narrative = `Insurance settlement ${event.ref}`;
+      break;
+    }
   }
+
 
   return {
     id: `pe_${event.ref}_${Date.now()}`,
