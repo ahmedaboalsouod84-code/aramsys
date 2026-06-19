@@ -445,6 +445,55 @@ export function buildJournalForEvent(
       narrative = `Insurance settlement ${event.ref}`;
       break;
     }
+
+    case "payroll.posted": {
+      const netSalary = event.gross - event.gosiEmployee - event.advancesRecovered;
+      lines.push(dr(map.salariesExpense, event.gross, event.costCenterId));
+      if (event.gosiEmployer > 0) lines.push(dr(map.gosiExpense, event.gosiEmployer, event.costCenterId));
+      if (event.gosiEmployee + event.gosiEmployer > 0)
+        lines.push(cr(map.gosiPayable, event.gosiEmployee + event.gosiEmployer));
+      if (event.advancesRecovered > 0) lines.push(cr(map.employeeAdvances, event.advancesRecovered));
+      lines.push(cr(map.salariesPayable, netSalary));
+      narrative = `Payroll ${event.ref}`;
+      break;
+    }
+
+    case "payroll.paid": {
+      const src = event.method === "cash" ? map.cashOnHand : map.bankMain;
+      lines.push(dr(map.salariesPayable, event.amount));
+      lines.push(cr(src, event.amount));
+      narrative = `Payroll paid ${event.ref}`;
+      break;
+    }
+
+    case "asset.acquired": {
+      lines.push(dr(map.fixedAssetsCost, event.cost));
+      const credit = event.paymentMethod === "cash" ? map.cashOnHand
+                   : event.paymentMethod === "ap"   ? map.accountsPayable
+                                                    : map.bankMain;
+      lines.push(cr(credit, event.cost));
+      narrative = `Asset acquisition ${event.ref}`;
+      break;
+    }
+
+    case "asset.depreciated": {
+      lines.push(dr(map.depreciationExpense, event.amount, event.costCenterId));
+      lines.push(cr(map.accumDepreciation, event.amount));
+      narrative = `Depreciation ${event.ref}`;
+      break;
+    }
+
+    case "asset.disposed": {
+      const nbv = event.cost - event.accumulated;
+      const gainLoss = event.proceeds - nbv; // +gain / -loss
+      lines.push(dr(map.accumDepreciation, event.accumulated));
+      if (event.proceeds > 0) lines.push(dr(map.bankMain, event.proceeds));
+      if (gainLoss < 0) lines.push(dr(map.fixedAssetGainLoss, -gainLoss));
+      lines.push(cr(map.fixedAssetsCost, event.cost));
+      if (gainLoss > 0) lines.push(cr(map.fixedAssetGainLoss, gainLoss));
+      narrative = `Asset disposal ${event.ref}`;
+      break;
+    }
   }
 
 
