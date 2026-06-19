@@ -25,6 +25,7 @@ import {
   nextRef, fmtSAR, poTotals, viTotals, cnTotals, statusBadge, STATUS_LABEL,
   type PrLine, type PoLine, type GrLine, type ViLine, type CnLine, type Supplier,
 } from "@/lib/procurement-store";
+import { postEvent } from "@/lib/posting-rules";
 
 function StatusBadge({ s }: { s: string }) {
   return <Badge className={statusBadge(s)}>{STATUS_LABEL[s] || s}</Badge>;
