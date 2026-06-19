@@ -25,6 +25,7 @@ import {
   nextRef, fmtSAR, poTotals, viTotals, cnTotals, statusBadge, STATUS_LABEL,
   type PrLine, type PoLine, type GrLine, type ViLine, type CnLine, type Supplier,
 } from "@/lib/procurement-store";
+import { postEvent } from "@/lib/posting-rules";
 
 function StatusBadge({ s }: { s: string }) {
   return <Badge className={statusBadge(s)}>{STATUS_LABEL[s] || s}</Badge>;
@@ -390,9 +391,14 @@ export function GoodsReceiptsPage() {
       const anyReceived = newLines.some((pl) => pl.receivedQty > 0);
       return { ...x, lines: newLines, status: allReceived ? "received" : anyReceived ? "partial_received" : x.status };
     }));
+    const grRef = nextRef("GR", grs);
+    const subtotal = valid.reduce((a, l) => a + l.qtyAccepted * l.unitCost, 0);
+    postEvent("procurement:gr", { kind: "gr.posted", ref: grRef, date: new Date().toISOString(), amount: subtotal, inventoryKind: "materials" });
     setOpen(false); setPoId(""); setWarehouse(""); setNotes(""); setLines([]);
-    toast.success("تم ترحيل GR");
+    toast.success("تم ترحيل GR وقيد المخزون");
   };
+
+
 
   return (
     <PageShell title="إيصالات الاستلام (GR)" desc="تأكيد الاستلام الفعلي للأصناف من المورد وفحصها. لا تُنشأ فاتورة مورد بدون GR.">
@@ -507,8 +513,10 @@ export function VendorInvoicesPage() {
       const fully = newLines.every((gl) => gl.invoicedQty >= gl.qtyAccepted);
       return { ...g, lines: newLines, status: fully ? "invoiced" : "partial_invoiced" };
     }));
+    const viRef = nextRef("VI", vis);
+    postEvent("procurement:vi", { kind: "vi.approved", ref: viRef, date: new Date().toISOString(), subtotal: totals.subtotal, vat: totals.vat });
     setOpen(false); setGrId(""); setInvoiceNo(""); setDueDate(""); setLines([]);
-    toast.success("تم إصدار VI");
+    toast.success("تم إصدار VI وقيد ذمم المورد");
   };
 
   return (
@@ -554,7 +562,7 @@ export function VendorInvoicesPage() {
       </div>
       <Card><CardContent className="p-0">
         <Table>
-          <TableHeader><TableRow><TableHead>المرجع</TableHead><TableHead>رقم المورد</TableHead><TableHead>GR / PO</TableHead><TableHead>المورد</TableHead><TableHead>الإجمالي</TableHead><TableHead>الحالة</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>المرجع</TableHead><TableHead>رقم المورد</TableHead><TableHead>GR / PO</TableHead><TableHead>المورد</TableHead><TableHead>الإجمالي</TableHead><TableHead>الحالة</TableHead><TableHead>إجراء</TableHead></TableRow></TableHeader>
           <TableBody>
             {vis.map((v) => (
               <TableRow key={v.id}>
@@ -564,9 +572,18 @@ export function VendorInvoicesPage() {
                 <TableCell>{suppliers.find((s) => s.id === v.supplierId)?.name_ar || "—"}</TableCell>
                 <TableCell>{fmtSAR(v.total)}</TableCell>
                 <TableCell><StatusBadge s={v.status} /></TableCell>
+                <TableCell>
+                  {(v.status === "approved" || v.status === "partial_credited") && (
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setVis((p) => p.map((x) => x.id === v.id ? { ...x, status: "paid" } : x));
+                      postEvent("procurement:pay", { kind: "supplier.paid", ref: v.ref, date: new Date().toISOString(), amount: v.total, method: "bank" });
+                      toast.success(`تم سداد ${v.ref}`);
+                    }}>سداد</Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
-            {vis.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">لا فواتير</TableCell></TableRow>}
+            {vis.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">لا فواتير</TableCell></TableRow>}
           </TableBody>
         </Table>
       </CardContent></Card>
@@ -630,8 +647,10 @@ export function CreditNotesPage() {
       const any = newLines.some((vl) => vl.creditedQty > 0);
       return { ...v, lines: newLines, status: allCredited ? "credited" : any ? "partial_credited" : v.status };
     }));
+    const cnRef = nextRef("CN", cns);
+    postEvent("procurement:cn", { kind: "cn.applied", ref: cnRef, date: new Date().toISOString(), subtotal: totals.subtotal, vat: totals.vat, inventoryKind: "materials" });
     setOpen(false); setViId(""); setReason(""); setLines([]);
-    toast.success("تم إصدار إشعار دائن");
+    toast.success("تم إصدار إشعار دائن وقيد تخفيض الذمم");
   };
 
   return (

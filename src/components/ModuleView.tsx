@@ -45,6 +45,8 @@ import {
 import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
 import { BnplClaimsPage } from "@/components/bnpl/BnplClaimsPage";
 import { PostingRulesPage } from "@/components/erp/PostingRulesPage";
+import { RealtimeKpiPage } from "@/components/erp/RealtimeKpiPage";
+import { InsuranceClaimsPage } from "@/components/insurance/InsuranceClaimsPage";
 import {
   SuppliersPage, PurchaseRequestsPage, PurchaseOrdersPage,
   GoodsReceiptsPage, VendorInvoicesPage, CreditNotesPage, SupplierOffersPage,
@@ -56,6 +58,7 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "inventory:medicine-dispensing": MedicineDispensingPage,
   "inventory:pharmacy": MedicineDispensingPage,
   "accounting:erp-dashboard": ErpDashboardPage,
+  "accounting:kpis": RealtimeKpiPage,
   "accounting:posting-rules": PostingRulesPage,
   "accounting:chart-of-accounts": ChartOfAccountsPage,
   "accounting:journal": JournalEntriesPage,
@@ -104,6 +107,8 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "purchases:goods-receipts": GoodsReceiptsPage,
   "purchases:invoices": VendorInvoicesPage,
   "purchases:return-invoices": CreditNotesPage,
+  // Insurance Claims — full lifecycle + auto-posting on settlement
+  "medical:insurance-claims": InsuranceClaimsPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,

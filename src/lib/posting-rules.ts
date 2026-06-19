@@ -46,6 +46,9 @@ export type AccountMap = {
 
   // Liabilities
   vatPayable: string;              // 2310
+  vatInputReceivable: string;      // 1320 (recoverable input VAT)
+  accountsPayable: string;         // 2110
+  grIrClearing: string;            // 2115 (Goods Received / Invoice Received)
   bnplCommissionPayable: string;   // 2150
   bankFeesPayable: string;         // 2160
 
@@ -54,6 +57,7 @@ export type AccountMap = {
   bankFeesExpense: string;         // 5320
   medicineCogs: string;            // 5210
   materialsCogs: string;           // 5220
+  insuranceWriteOff: string;       // 5410
 
   // Inventory
   medicineInventory: string;       // 1210
@@ -76,12 +80,16 @@ const DEFAULT_MAP: AccountMap = {
   pharmacyRevenue: "4150",
   otherRevenue: "4190",
   vatPayable: "2310",
+  vatInputReceivable: "1320",
+  accountsPayable: "2110",
+  grIrClearing: "2115",
   bnplCommissionPayable: "2150",
   bankFeesPayable: "2160",
   bnplCommissionExpense: "5310",
   bankFeesExpense: "5320",
   medicineCogs: "5210",
   materialsCogs: "5220",
+  insuranceWriteOff: "5410",
   medicineInventory: "1210",
   materialsInventory: "1220",
 };
@@ -180,7 +188,49 @@ export type PostingEvent =
       date: string;
       cost: number;
       costCenterId?: string;
+    }
+  // Procurement: Goods Receipt posted → Inventory DR / GR-IR Clearing CR
+  | {
+      kind: "gr.posted";
+      ref: string;
+      date: string;
+      amount: number;            // subtotal (cost ex-VAT) of accepted goods
+      inventoryKind?: "medicine" | "materials";
+    }
+  // Procurement: Vendor Invoice approved → GR-IR + VAT-Input DR / AP CR
+  | {
+      kind: "vi.approved";
+      ref: string;
+      date: string;
+      subtotal: number;
+      vat: number;
+    }
+  // Procurement: Credit Note applied → AP DR / Inventory + VAT-Input CR
+  | {
+      kind: "cn.applied";
+      ref: string;
+      date: string;
+      subtotal: number;
+      vat: number;
+      inventoryKind?: "medicine" | "materials";
+    }
+  // Procurement: Supplier payment → AP DR / Bank CR
+  | {
+      kind: "supplier.paid";
+      ref: string;
+      date: string;
+      amount: number;
+      method?: "bank" | "cash";
+    }
+  // Insurance claim settlement → Bank DR (+ WriteOff DR if haircut) / Insurance AR CR
+  | {
+      kind: "insurance.settled";
+      ref: string;
+      date: string;
+      gross: number;            // amount claimed (= receivable closed)
+      net: number;              // amount received in bank
     };
+
 
 /* ============================================================
  * 4. Helpers
@@ -287,7 +337,50 @@ export function buildJournalForEvent(
       narrative = `Pharmacy dispense ${event.ref}`;
       break;
     }
+
+    case "gr.posted": {
+      const inv = event.inventoryKind === "materials" ? map.materialsInventory : map.medicineInventory;
+      lines.push(dr(inv, event.amount));
+      lines.push(cr(map.grIrClearing, event.amount));
+      narrative = `Goods receipt ${event.ref}`;
+      break;
+    }
+
+    case "vi.approved": {
+      lines.push(dr(map.grIrClearing, event.subtotal));
+      if (event.vat > 0) lines.push(dr(map.vatInputReceivable, event.vat));
+      lines.push(cr(map.accountsPayable, event.subtotal + event.vat));
+      narrative = `Vendor invoice ${event.ref}`;
+      break;
+    }
+
+    case "cn.applied": {
+      const inv = event.inventoryKind === "materials" ? map.materialsInventory : map.medicineInventory;
+      lines.push(dr(map.accountsPayable, event.subtotal + event.vat));
+      lines.push(cr(inv, event.subtotal));
+      if (event.vat > 0) lines.push(cr(map.vatInputReceivable, event.vat));
+      narrative = `Credit note ${event.ref}`;
+      break;
+    }
+
+    case "supplier.paid": {
+      const src = event.method === "cash" ? map.cashOnHand : map.bankMain;
+      lines.push(dr(map.accountsPayable, event.amount));
+      lines.push(cr(src, event.amount));
+      narrative = `Supplier payment ${event.ref}`;
+      break;
+    }
+
+    case "insurance.settled": {
+      const haircut = event.gross - event.net;
+      lines.push(dr(map.bankMain, event.net));
+      if (haircut > 0) lines.push(dr(map.insuranceWriteOff, haircut));
+      lines.push(cr(map.insuranceReceivable, event.gross));
+      narrative = `Insurance settlement ${event.ref}`;
+      break;
+    }
   }
+
 
   return {
     id: `pe_${event.ref}_${Date.now()}`,
