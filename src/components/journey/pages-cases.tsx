@@ -271,6 +271,8 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+          <TabsTrigger value="plan">خطة العلاج</TabsTrigger>
+          <TabsTrigger value="rx">الوصفات</TabsTrigger>
           <TabsTrigger value="services">الخدمات ({c.services.length})</TabsTrigger>
           <TabsTrigger value="invoices">الفواتير ({caseInvoices.length})</TabsTrigger>
           <TabsTrigger value="payments">المدفوعات ({casePayments.length})</TabsTrigger>
