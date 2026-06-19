@@ -455,10 +455,15 @@ function ServicesTab({ caseId, log }: { caseId: string; onChange: (c: PatientCas
               </Select>
             </div>
             <div><Label>الكمية</Label><Input type="number" min={1} value={form.qty} onChange={e => setForm({ ...form, qty: +e.target.value })} /></div>
-            <div><Label>السعر</Label><Input type="number" value={form.unitPrice} onChange={e => setForm({ ...form, unitPrice: +e.target.value })} disabled={form.free} /></div>
-            <div className="col-span-2 flex items-center gap-2"><input type="checkbox" id="free" checked={form.free} onChange={e => setForm({ ...form, free: e.target.checked })} /><Label htmlFor="free">مجاني</Label></div>
+            <div>
+              <Label>السعر {!canEditPrice && <span className="text-xs text-muted-foreground">(الطبيب فقط)</span>}</Label>
+              <Input type="number" value={form.unitPrice}
+                onChange={e => setForm({ ...form, unitPrice: +e.target.value })}
+                disabled={form.free || !canEditPrice} />
+            </div>
+            <div className="col-span-2 flex items-center gap-2"><input type="checkbox" id="free" checked={form.free} onChange={e => setForm({ ...form, free: e.target.checked })} disabled={!canEditPrice} /><Label htmlFor="free">مجاني {!canEditPrice && <span className="text-xs text-muted-foreground">(الطبيب فقط)</span>}</Label></div>
             {form.serviceId && form.unitPrice !== (services.find(s => s.id === form.serviceId)?.price || 0) &&
-              <div className="col-span-2"><Label>سبب تعديل السعر</Label><Input value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} /></div>}
+              <div className="col-span-2"><Label>سبب تعديل السعر</Label><Input value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} required /></div>}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setAddOpen(false)}>إلغاء</Button><Button onClick={addService}>إضافة</Button></DialogFooter>
         </DialogContent>
