@@ -83,6 +83,9 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "banks:statement-import": StatementImportPage,
   "banks:settlements": SettlementHistoryPage,
   "banks:approvals": ApprovalWorkflowPage,
+  // Cash & Treasury — Reception Shifts + Approval (SAP-style Clearing)
+  "cash:reception-shift": ReceptionShiftPage,
+  "cash:treasury-approval": TreasuryApprovalPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
