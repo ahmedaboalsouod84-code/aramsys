@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { CaseLifecycle } from "./CaseLifecycle";
+import { TreatmentPlanTab, PrescriptionsTab } from "./pages-doctor";
 
 /* ============================================================
    CASES LIST + DETAIL (with tabs)
@@ -271,6 +272,8 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+          <TabsTrigger value="plan">خطة العلاج</TabsTrigger>
+          <TabsTrigger value="rx">الوصفات</TabsTrigger>
           <TabsTrigger value="services">الخدمات ({c.services.length})</TabsTrigger>
           <TabsTrigger value="invoices">الفواتير ({caseInvoices.length})</TabsTrigger>
           <TabsTrigger value="payments">المدفوعات ({casePayments.length})</TabsTrigger>
@@ -299,6 +302,14 @@ function CaseDetail({ caseId, onBack }: { caseId: string; onBack: () => void }) 
             onChange={(next) => updateCase(() => next)}
             onLog={(action, from, to) => log(action, undefined, from, to)}
           />
+        </TabsContent>
+
+        <TabsContent value="plan">
+          <TreatmentPlanTab caseId={c.id} />
+        </TabsContent>
+
+        <TabsContent value="rx">
+          <PrescriptionsTab caseId={c.id} />
         </TabsContent>
 
         <TabsContent value="services">
@@ -376,11 +387,20 @@ function ServicesTab({ caseId, log }: { caseId: string; onChange: (c: PatientCas
   const c = cases.find(x => x.id === caseId)!;
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ serviceId: "", qty: 1, unitPrice: 0, free: false, reason: "" });
+  const canEditPrice = role === "doctor" || role === "medical_manager" || role === "admin";
 
   const addService = () => {
     if (!form.serviceId) return toast.error("اختر خدمة");
     const sv = services.find(s => s.id === form.serviceId)!;
-    const price = form.free ? 0 : (form.unitPrice || sv.price);
+    const defaultPrice = sv.price;
+    const requestedPrice = form.free ? 0 : (form.unitPrice || defaultPrice);
+    if (!canEditPrice && (form.free || requestedPrice !== defaultPrice)) {
+      return toast.error("تعديل السعر أو جعل الخدمة مجانية مقصور على الطبيب");
+    }
+    if (requestedPrice !== defaultPrice && !form.free && !form.reason.trim()) {
+      return toast.error("أدخل سبب تعديل السعر");
+    }
+    const price = requestedPrice;
     const cs: CaseService = {
       id: crypto.randomUUID(), serviceId: sv.id, code: sv.code, name_ar: sv.name_ar,
       qty: form.qty, unitPrice: price, originalPrice: sv.price,
@@ -444,10 +464,15 @@ function ServicesTab({ caseId, log }: { caseId: string; onChange: (c: PatientCas
               </Select>
             </div>
             <div><Label>الكمية</Label><Input type="number" min={1} value={form.qty} onChange={e => setForm({ ...form, qty: +e.target.value })} /></div>
-            <div><Label>السعر</Label><Input type="number" value={form.unitPrice} onChange={e => setForm({ ...form, unitPrice: +e.target.value })} disabled={form.free} /></div>
-            <div className="col-span-2 flex items-center gap-2"><input type="checkbox" id="free" checked={form.free} onChange={e => setForm({ ...form, free: e.target.checked })} /><Label htmlFor="free">مجاني</Label></div>
+            <div>
+              <Label>السعر {!canEditPrice && <span className="text-xs text-muted-foreground">(الطبيب فقط)</span>}</Label>
+              <Input type="number" value={form.unitPrice}
+                onChange={e => setForm({ ...form, unitPrice: +e.target.value })}
+                disabled={form.free || !canEditPrice} />
+            </div>
+            <div className="col-span-2 flex items-center gap-2"><input type="checkbox" id="free" checked={form.free} onChange={e => setForm({ ...form, free: e.target.checked })} disabled={!canEditPrice} /><Label htmlFor="free">مجاني {!canEditPrice && <span className="text-xs text-muted-foreground">(الطبيب فقط)</span>}</Label></div>
             {form.serviceId && form.unitPrice !== (services.find(s => s.id === form.serviceId)?.price || 0) &&
-              <div className="col-span-2"><Label>سبب تعديل السعر</Label><Input value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} /></div>}
+              <div className="col-span-2"><Label>سبب تعديل السعر</Label><Input value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} required /></div>}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setAddOpen(false)}>إلغاء</Button><Button onClick={addService}>إضافة</Button></DialogFooter>
         </DialogContent>

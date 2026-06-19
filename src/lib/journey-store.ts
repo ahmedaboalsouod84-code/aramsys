@@ -285,6 +285,46 @@ export type ActivityEntry = {
   detail?: string;
 };
 
+/* ---------- Doctor Workspace: Treatment Plans + Prescriptions ---------- */
+export type TreatmentPlanItemStatus = "planned" | "in_progress" | "done" | "cancelled";
+export type TreatmentPlanItem = {
+  id: string;
+  caseId: string;
+  doctorId: string;
+  serviceId?: string;          // optional link to a Service
+  title: string;               // e.g. "حشو ضرس علوي أيمن"
+  toothCode?: string;          // e.g. "16"
+  sessions: number;
+  estimatedCost: number;
+  scheduledAt?: string;
+  status: TreatmentPlanItemStatus;
+  createdBy: string;
+  createdAt: string;
+  notes?: string;
+};
+
+export type PrescriptionItem = {
+  drugName: string;
+  dose: string;                // "500 mg"
+  frequency: string;           // "كل 8 ساعات"
+  durationDays: number;
+  route?: string;              // "فموي / موضعي"
+  notes?: string;
+};
+
+export type Prescription = {
+  id: string;
+  ref: string;                 // RX-####
+  caseId: string;
+  patientId: string;
+  doctorId: string;
+  issuedAt: string;
+  items: PrescriptionItem[];
+  diagnosis?: string;
+  followUpDate?: string;
+  status: "draft" | "issued" | "dispensed" | "cancelled";
+};
+
 /* ---------- Seed ---------- */
 const SEED_SERVICES: Service[] = [
   { id: "sv1", code: "CON-001", name_en: "General Consultation", name_ar: "كشف عام", category: "consultation", department: "العيادة العامة", price: 150, taxable: true, vat: 15, active: true, requiresApproval: false, editableByDoctor: false },
@@ -368,6 +408,8 @@ export const usePackets = () => useJStore<ToolPacket[]>("packets", SEED_PACKETS)
 export const useMatRequests = () => useJStore<MaterialRequest[]>("matreq", []);
 export const useBatches = () => useJStore<AccountingBatch[]>("batches", []);
 export const useActivity = () => useJStore<ActivityEntry[]>("activity", []);
+export const useTreatmentPlans = () => useJStore<TreatmentPlanItem[]>("treatment_plans", []);
+export const usePrescriptions = () => useJStore<Prescription[]>("prescriptions", []);
 
 /* ---------- Numbering ---------- */
 function pad(n: number, w = 4) { return String(n).padStart(w, "0"); }
