@@ -513,8 +513,10 @@ export function VendorInvoicesPage() {
       const fully = newLines.every((gl) => gl.invoicedQty >= gl.qtyAccepted);
       return { ...g, lines: newLines, status: fully ? "invoiced" : "partial_invoiced" };
     }));
+    const viRef = nextRef("VI", vis);
+    postEvent("procurement:vi", { kind: "vi.approved", ref: viRef, date: new Date().toISOString(), subtotal: totals.subtotal, vat: totals.vat });
     setOpen(false); setGrId(""); setInvoiceNo(""); setDueDate(""); setLines([]);
-    toast.success("تم إصدار VI");
+    toast.success("تم إصدار VI وقيد ذمم المورد");
   };
 
   return (
