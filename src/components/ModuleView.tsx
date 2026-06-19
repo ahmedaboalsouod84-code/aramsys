@@ -55,6 +55,8 @@ import {
   ReceiptVouchersPage, PaymentVouchersPage, VouchersOverviewPage,
 } from "@/components/cash/CashVoucherPages";
 import { ZatcaEInvoicingPage } from "@/components/erp/ZatcaEInvoicingPage";
+import { PayrollPage } from "@/components/hr/PayrollPage";
+import { AddAssetPage, AssetsListPage, DepreciationPage } from "@/components/assets/FixedAssetsPages";
 
 
 
@@ -118,6 +120,12 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "purchases:return-invoices": CreditNotesPage,
   // Insurance Claims — full lifecycle + auto-posting on settlement
   "medical:insurance-claims": InsuranceClaimsPage,
+  // HR — Payroll runs with balanced JE posting
+  "hr:payroll": PayrollPage,
+  // Fixed Assets — registry + straight-line depreciation + disposal
+  "assets:add":          AddAssetPage,
+  "assets:list":         AssetsListPage,
+  "assets:depreciation": DepreciationPage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,

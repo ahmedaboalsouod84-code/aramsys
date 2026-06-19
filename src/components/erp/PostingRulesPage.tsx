@@ -39,6 +39,15 @@ const FIELD_LABELS: Record<keyof AccountMap, { en: string; ar: string; group: st
   insuranceWriteOff:      { en: "Insurance Write-Off",     ar: "خصم تأمين",          group: "Expenses" },
   medicineInventory:      { en: "Medicine Inventory",      ar: "مخزون الأدوية",      group: "Inventory" },
   materialsInventory:     { en: "Materials Inventory",     ar: "مخزون المستهلكات",   group: "Inventory" },
+  salariesExpense:        { en: "Salaries Expense",        ar: "مصروف الرواتب",      group: "Payroll" },
+  gosiExpense:            { en: "GOSI Expense (Employer)", ar: "تأمينات (صاحب العمل)", group: "Payroll" },
+  salariesPayable:        { en: "Salaries Payable",        ar: "رواتب مستحقة",       group: "Payroll" },
+  gosiPayable:            { en: "GOSI Payable",            ar: "تأمينات مستحقة",     group: "Payroll" },
+  employeeAdvances:       { en: "Employee Advances",       ar: "سلف الموظفين",       group: "Payroll" },
+  fixedAssetsCost:        { en: "Fixed Assets — Cost",     ar: "الأصول الثابتة — التكلفة", group: "Fixed Assets" },
+  accumDepreciation:      { en: "Accumulated Depreciation", ar: "مجمع الاستهلاك",    group: "Fixed Assets" },
+  depreciationExpense:    { en: "Depreciation Expense",    ar: "مصروف الاستهلاك",    group: "Fixed Assets" },
+  fixedAssetGainLoss:     { en: "Asset Disposal Gain/Loss", ar: "أرباح/خسائر بيع أصول", group: "Fixed Assets" },
 };
 
 export function PostingRulesPage() {

@@ -58,10 +58,23 @@ export type AccountMap = {
   medicineCogs: string;            // 5210
   materialsCogs: string;           // 5220
   insuranceWriteOff: string;       // 5410
+  salariesExpense: string;         // 5110
+  gosiExpense: string;             // 5115 (employer share)
+  depreciationExpense: string;     // 5510
 
   // Inventory
   medicineInventory: string;       // 1210
   materialsInventory: string;      // 1220
+
+  // Fixed Assets
+  fixedAssetsCost: string;         // 1510 (gross cost)
+  accumDepreciation: string;       // 1590 (contra-asset)
+  fixedAssetGainLoss: string;      // 4910 / 5910
+
+  // Payroll Liabilities
+  salariesPayable: string;         // 2210
+  gosiPayable: string;             // 2220
+  employeeAdvances: string;        // 1140
 };
 
 const DEFAULT_MAP: AccountMap = {
@@ -90,8 +103,17 @@ const DEFAULT_MAP: AccountMap = {
   medicineCogs: "5210",
   materialsCogs: "5220",
   insuranceWriteOff: "5410",
+  salariesExpense: "5110",
+  gosiExpense: "5115",
+  depreciationExpense: "5510",
   medicineInventory: "1210",
   materialsInventory: "1220",
+  fixedAssetsCost: "1510",
+  accumDepreciation: "1590",
+  fixedAssetGainLoss: "4910",
+  salariesPayable: "2210",
+  gosiPayable: "2220",
+  employeeAdvances: "1140",
 };
 
 /* ============================================================
@@ -229,6 +251,50 @@ export type PostingEvent =
       date: string;
       gross: number;            // amount claimed (= receivable closed)
       net: number;              // amount received in bank
+    }
+  // Payroll posted → Salary expense DR / GOSI payable + Net salaries payable + Advances recovered CR
+  | {
+      kind: "payroll.posted";
+      ref: string;
+      date: string;
+      gross: number;            // total gross salaries
+      gosiEmployee: number;     // withheld from employee
+      gosiEmployer: number;     // employer share (additional expense)
+      advancesRecovered: number;
+      costCenterId?: string;
+    }
+  // Payroll paid → settle Salaries Payable from bank
+  | {
+      kind: "payroll.paid";
+      ref: string;
+      date: string;
+      amount: number;
+      method?: "bank" | "cash";
+    }
+  // Fixed asset acquired → Cost DR / Bank or AP CR
+  | {
+      kind: "asset.acquired";
+      ref: string;
+      date: string;
+      cost: number;
+      paymentMethod?: "bank" | "cash" | "ap";
+    }
+  // Periodic depreciation → Depreciation Expense DR / Accumulated Depreciation CR
+  | {
+      kind: "asset.depreciated";
+      ref: string;
+      date: string;
+      amount: number;
+      costCenterId?: string;
+    }
+  // Asset disposal → Accum.Dep DR + Bank DR (proceeds) + Loss DR / Gain CR / Asset Cost CR
+  | {
+      kind: "asset.disposed";
+      ref: string;
+      date: string;
+      cost: number;             // original gross cost
+      accumulated: number;      // accumulated depreciation to date
+      proceeds: number;         // cash received
     };
 
 
@@ -377,6 +443,55 @@ export function buildJournalForEvent(
       if (haircut > 0) lines.push(dr(map.insuranceWriteOff, haircut));
       lines.push(cr(map.insuranceReceivable, event.gross));
       narrative = `Insurance settlement ${event.ref}`;
+      break;
+    }
+
+    case "payroll.posted": {
+      const netSalary = event.gross - event.gosiEmployee - event.advancesRecovered;
+      lines.push(dr(map.salariesExpense, event.gross, event.costCenterId));
+      if (event.gosiEmployer > 0) lines.push(dr(map.gosiExpense, event.gosiEmployer, event.costCenterId));
+      if (event.gosiEmployee + event.gosiEmployer > 0)
+        lines.push(cr(map.gosiPayable, event.gosiEmployee + event.gosiEmployer));
+      if (event.advancesRecovered > 0) lines.push(cr(map.employeeAdvances, event.advancesRecovered));
+      lines.push(cr(map.salariesPayable, netSalary));
+      narrative = `Payroll ${event.ref}`;
+      break;
+    }
+
+    case "payroll.paid": {
+      const src = event.method === "cash" ? map.cashOnHand : map.bankMain;
+      lines.push(dr(map.salariesPayable, event.amount));
+      lines.push(cr(src, event.amount));
+      narrative = `Payroll paid ${event.ref}`;
+      break;
+    }
+
+    case "asset.acquired": {
+      lines.push(dr(map.fixedAssetsCost, event.cost));
+      const credit = event.paymentMethod === "cash" ? map.cashOnHand
+                   : event.paymentMethod === "ap"   ? map.accountsPayable
+                                                    : map.bankMain;
+      lines.push(cr(credit, event.cost));
+      narrative = `Asset acquisition ${event.ref}`;
+      break;
+    }
+
+    case "asset.depreciated": {
+      lines.push(dr(map.depreciationExpense, event.amount, event.costCenterId));
+      lines.push(cr(map.accumDepreciation, event.amount));
+      narrative = `Depreciation ${event.ref}`;
+      break;
+    }
+
+    case "asset.disposed": {
+      const nbv = event.cost - event.accumulated;
+      const gainLoss = event.proceeds - nbv; // +gain / -loss
+      lines.push(dr(map.accumDepreciation, event.accumulated));
+      if (event.proceeds > 0) lines.push(dr(map.bankMain, event.proceeds));
+      if (gainLoss < 0) lines.push(dr(map.fixedAssetGainLoss, -gainLoss));
+      lines.push(cr(map.fixedAssetsCost, event.cost));
+      if (gainLoss > 0) lines.push(cr(map.fixedAssetGainLoss, gainLoss));
+      narrative = `Asset disposal ${event.ref}`;
       break;
     }
   }
