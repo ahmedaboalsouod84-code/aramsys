@@ -12,7 +12,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, ArrowLeft, Trash2, FileText, Receipt as ReceiptIcon, AlertCircle } from "lucide-react";
+import { Plus, Search, ArrowLeft, Trash2, FileText, AlertCircle } from "lucide-react";
 import {
   useServices, useDoctors, usePatients, useCases, useInvoices, usePayments,
   useRadiology, useMatRequests, useActivity, usePackets,
