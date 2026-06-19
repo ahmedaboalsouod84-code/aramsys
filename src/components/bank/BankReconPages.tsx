@@ -18,13 +18,14 @@ import { useAccounts } from "@/lib/erp-store";
 import {
   useBanks, useBankTxns, useSettlements, useBankActivity, useBankStatements,
   createBank, addBankTxn, buildReconciliation, approveSettlement, reverseSettlement,
-  importStatementLines, matchStatementLine, bankAccountBalances, fmt,
+  importStatementLines, matchStatementLine, autoMatchStatement, bankAccountBalances, fmt,
   type Bank, type BankTxn,
 } from "@/lib/bank-recon-store";
 import {
   Landmark, Plus, ArrowDownCircle, ArrowUpCircle, RotateCcw, CheckCircle2,
-  AlertTriangle, FileUp, Link2, History, ListChecks,
+  AlertTriangle, FileUp, Link2, History, ListChecks, Wand2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 /* ============ shared utilities ============ */
 
@@ -594,7 +595,25 @@ export function StatementImportPage() {
   return (
     <div className="p-4 md:p-6 space-y-6">
       <PageHeader icon={FileUp} title={t("Bank Statement Import", "استيراد كشف البنك")}
-        actions={<BankPicker value={bank?.id} onChange={setBank} />} />
+        actions={
+          <div className="flex items-center gap-2">
+            <BankPicker value={bank?.id} onChange={setBank} />
+            {bank && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-1.5"
+                onClick={() => {
+                  const n = autoMatchStatement(bank.id, user?.username);
+                  if (n > 0) toast.success(t(`Matched ${n} lines`, `تمت مطابقة ${n} سطر`));
+                  else toast.info(t("No new matches found", "لا توجد مطابقات جديدة"));
+                }}
+              >
+                <Wand2 className="h-4 w-4" />{t("Auto-Match", "مطابقة تلقائية")}
+              </Button>
+            )}
+          </div>
+        } />
 
       {bank && (
         <>
