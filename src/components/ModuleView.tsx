@@ -45,6 +45,10 @@ import {
 import { ReceptionShiftPage, TreasuryApprovalPage } from "@/components/treasury/TreasuryPages";
 import { BnplClaimsPage } from "@/components/bnpl/BnplClaimsPage";
 import { PostingRulesPage } from "@/components/erp/PostingRulesPage";
+import {
+  SuppliersPage, PurchaseRequestsPage, PurchaseOrdersPage,
+  GoodsReceiptsPage, VendorInvoicesPage, CreditNotesPage, SupplierOffersPage,
+} from "@/components/procurement/ProcurementPages";
 
 
 
