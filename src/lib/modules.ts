@@ -69,6 +69,7 @@ export const MODULES: ModuleDef[] = [
     desc_en: "Employees, payroll, attendance, leave, recruitment, training",
     desc_ar: "الموظفون والرواتب والحضور والإجازات والتوظيف والتدريب",
     items: [
+      { slug: "org-structure", en: "Org Structure", ar: "الهيكل الوظيفي" },
       { slug: "employees", en: "Employees", ar: "الموظفون" },
       { slug: "payroll", en: "Payroll", ar: "الرواتب" },
       { slug: "attendance", en: "Attendance", ar: "الحضور والانصراف" },
@@ -249,6 +250,7 @@ export const MODULES: ModuleDef[] = [
       { slug: "journal", en: "Journal Entries", ar: "القيود اليومية" },
       { slug: "ledger", en: "General Ledger", ar: "دفتر الأستاذ" },
       { slug: "cost-centers", en: "Cost Centers", ar: "مراكز التكلفة" },
+      { slug: "org-structure", en: "Org Structure & Centers", ar: "الهيكل الوظيفي ومراكز التكلفة والربحية" },
       { slug: "profit-centers", en: "Profit Centers", ar: "مراكز الربحية" },
       { slug: "cost-distribution", en: "Cost Distribution", ar: "توزيع التكاليف" },
       { slug: "clinic-profitability", en: "Clinic Profitability", ar: "ربحية العيادات" },

@@ -59,6 +59,7 @@ import { PayrollPage } from "@/components/hr/PayrollPage";
 import { AddAssetPage, AssetsListPage, DepreciationPage } from "@/components/assets/FixedAssetsPages";
 import { BudgetPage } from "@/components/erp/BudgetPage";
 import { PeriodClosePage } from "@/components/erp/PeriodClosePage";
+import { OrgStructurePage } from "@/components/erp/OrgStructurePage";
 
 
 
@@ -132,6 +133,9 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "accounting:budget":         BudgetPage,
   "accounting:final-accounts": PeriodClosePage,
   "accounting:period-close":   PeriodClosePage,
+  // Organizational structure — positions, cost & profit centers reference
+  "hr:org-structure":          OrgStructurePage,
+  "accounting:org-structure":  OrgStructurePage,
   // Aliases: route legacy/medical patient pages to the unified Journey screens
   "medical:patient-search": PatientsPage,
   "medical:patients": PatientsPage,
