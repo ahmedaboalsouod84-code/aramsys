@@ -34,7 +34,7 @@ export const ROLE_PERMS: Record<Role, RolePerms> = {
       "patient-search", "clinic-booking", "clinic-reception",
       "pending-invoices", "outpatient-billing", "emergency", "doctor-schedules",
     ],
-    sales: ["new-invoice", "pos", "invoices", "customers", "agreements"],
+    sales: ["new-invoice", "pos", "invoices", "customers", "agreements", "bnpl-claims"],
     cash: ["reception-shift"],
     sms: true,
     journey: ["reception-dash", "patients", "cases", "services", "invoices", "payments", "activity"],
@@ -51,7 +51,7 @@ export const ROLE_PERMS: Record<Role, RolePerms> = {
   hr: { hr: true, projects: true, archive: true, sms: ["send", "reports"] },
   accountant: {
     accounting: true, cash: true, banks: true, assets: true,
-    sales: ["invoices", "returns", "customers", "agreements"],
+    sales: ["invoices", "returns", "customers", "agreements", "bnpl-claims"],
     purchases: ["invoices", "return-invoices", "suppliers", "expenses", "taxes"],
     sms: ["send", "reports"],
     journey: ["invoices", "payments", "batches", "profitability", "activity"],
