@@ -51,6 +51,10 @@ import {
   SuppliersPage, PurchaseRequestsPage, PurchaseOrdersPage,
   GoodsReceiptsPage, VendorInvoicesPage, CreditNotesPage, SupplierOffersPage,
 } from "@/components/procurement/ProcurementPages";
+import {
+  ReceiptVouchersPage, PaymentVouchersPage, VouchersOverviewPage,
+} from "@/components/cash/CashVoucherPages";
+import { ZatcaEInvoicingPage } from "@/components/erp/ZatcaEInvoicingPage";
 
 
 
@@ -60,6 +64,7 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   "accounting:erp-dashboard": ErpDashboardPage,
   "accounting:kpis": RealtimeKpiPage,
   "accounting:posting-rules": PostingRulesPage,
+  "accounting:e-invoicing": ZatcaEInvoicingPage,
   "accounting:chart-of-accounts": ChartOfAccountsPage,
   "accounting:journal": JournalEntriesPage,
   "accounting:ledger": GeneralLedgerPage,
@@ -97,6 +102,10 @@ const ERP_PAGES: Record<string, React.ComponentType> = {
   // Cash & Treasury — Reception Shifts + Approval (SAP-style Clearing)
   "cash:reception-shift": ReceptionShiftPage,
   "cash:treasury-approval": TreasuryApprovalPage,
+  // Cash Vouchers — Receipt / Payment + overview
+  "cash:vouchers": VouchersOverviewPage,
+  "cash:receivable": ReceiptVouchersPage,
+  "cash:payable": PaymentVouchersPage,
   // BNPL — Tabby / Tamara claim builder + commission engine
   "sales:bnpl-claims": BnplClaimsPage,
   // Procurement chain: PR → PO → GR → VI → CN
